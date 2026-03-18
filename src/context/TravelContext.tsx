@@ -1,5 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  setDoc,
+  orderBy,
+  onSnapshot,
+  getDocFromServer
+} from 'firebase/firestore';
+import { db } from '../firebase';
+import { useAuth } from './AuthContext';
 import { TravelItinerary } from '../types';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
 
 interface TravelContextType {
   savedItineraries: TravelItinerary[];
@@ -13,60 +37,105 @@ interface TravelContextType {
 const TravelContext = createContext<TravelContextType | undefined>(undefined);
 
 export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const [savedItineraries, setSavedItineraries] = useState<TravelItinerary[]>([]);
   const [currentItinerary, setCurrentItinerary] = useState<TravelItinerary | null>(null);
 
+  const handleFirestoreError = (error: unknown, operationType: OperationType, path: string | null) => {
+    const errInfo = {
+      error: error instanceof Error ? error.message : String(error),
+      authInfo: {
+        userId: user?.uid,
+        email: user?.email,
+        emailVerified: user?.emailVerified,
+        isAnonymous: user?.isAnonymous,
+      },
+      operationType,
+      path
+    };
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+    throw new Error(JSON.stringify(errInfo));
+  };
+
   const fetchItineraries = async () => {
+    if (!user) {
+      setSavedItineraries([]);
+      return;
+    }
+    const path = 'itineraries';
     try {
-      const response = await fetch('/api/itineraries');
-      if (response.ok) {
-        const data = await response.json();
-        setSavedItineraries(data);
-      }
+      const q = query(
+        collection(db, path), 
+        where('userId', '==', user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as TravelItinerary));
+      data.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      setSavedItineraries(data);
     } catch (e) {
-      console.error("Failed to load saved itineraries", e);
+      handleFirestoreError(e, OperationType.LIST, path);
     }
   };
 
   const saveItinerary = async (item: TravelItinerary, name?: string) => {
+    if (!user) return null;
+    const path = 'itineraries';
     const newItinerary = { 
       ...item, 
-      id: item.id || Date.now().toString(),
-      name: name || item.name || `${item.destination}之旅 (${(item.arrivalTime || (item as any).startDate || '').split('T')[0]})`
+      userId: user.uid,
+      name: name || item.name || `${item.destination}之旅 (${(item.arrivalTime || (item as any).startDate || '').split('T')[0]})`,
+      createdAt: new Date().toISOString()
     };
+    
     try {
-      const response = await fetch('/api/itineraries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newItinerary)
-      });
-      if (response.ok) {
-        const saved = await response.json();
-        setSavedItineraries(prev => [saved, ...prev.filter(i => i.id !== saved.id)]);
-        return saved;
+      let docRef;
+      if (item.id) {
+        docRef = doc(db, path, item.id);
+        await setDoc(docRef, newItinerary, { merge: true });
+      } else {
+        docRef = await addDoc(collection(db, path), newItinerary);
       }
+      const saved = { ...newItinerary, id: docRef.id } as TravelItinerary;
+      setSavedItineraries(prev => [saved, ...prev.filter(i => i.id !== saved.id)]);
+      return saved;
     } catch (e) {
-      console.error("Failed to save itinerary", e);
+      handleFirestoreError(e, OperationType.WRITE, path);
+      return null;
     }
-    return null;
   };
 
   const deleteItinerary = async (id: string) => {
+    if (!user) return;
+    const path = `itineraries/${id}`;
     try {
-      const response = await fetch(`/api/itineraries/${id}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSavedItineraries(prev => prev.filter(i => i.id !== id));
-      }
+      await deleteDoc(doc(db, 'itineraries', id));
+      setSavedItineraries(prev => prev.filter(i => i.id !== id));
     } catch (e) {
-      console.error("Failed to delete itinerary", e);
+      handleFirestoreError(e, OperationType.DELETE, path);
     }
   };
 
   useEffect(() => {
-    fetchItineraries();
-  }, []);
+    if (user) {
+      fetchItineraries();
+      
+      // Real-time updates
+      const q = query(
+        collection(db, 'itineraries'), 
+        where('userId', '==', user.uid)
+      );
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as TravelItinerary));
+        data.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        setSavedItineraries(data);
+      }, (error) => {
+        console.error("Snapshot error:", error);
+      });
+      return unsubscribe;
+    } else {
+      setSavedItineraries([]);
+    }
+  }, [user]);
 
   return (
     <TravelContext.Provider value={{ 

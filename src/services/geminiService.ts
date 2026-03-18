@@ -32,7 +32,7 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
   Sightseeing Preferences: ${params.sightseeingPrefs || "None specified"}
   Accommodation Type: ${params.accommodationType === 'car' ? 'Sleeping in the car (Suggest campsites/parking)' : params.accommodationType}
   Accommodation Budget: ${params.budget ? params.budget + ' RMB' : 'Not specified'}
-  Flexible Generation (add extra suggestions): ${params.flexible ? "Yes" : "No"}
+  Flexible Generation: ${params.flexible ? "Yes (The AI can add, remove, or adjust activities based on preferences and logical routing to make the itinerary more reasonable and optimized, even if it differs slightly from the exact input list)" : "No (Strictly follow the user's input as much as possible)"}
 
   IMPORTANT: 
   1. All text content in the response MUST be in Chinese (Simplified).

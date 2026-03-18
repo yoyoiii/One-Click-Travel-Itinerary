@@ -38,8 +38,13 @@ export const PlanPage: React.FC = () => {
   const { setCurrentItinerary } = useTravel();
 
   const [destination, setDestination] = useState(CHINA_REGIONS[0]);
-  const [arrivalTime, setArrivalTime] = useState('');
-  const [departureTime, setDepartureTime] = useState('');
+  
+  // Split arrival and departure into date and time
+  const [arrivalDate, setArrivalDate] = useState('');
+  const [arrivalTimeStr, setArrivalTimeStr] = useState('10:00');
+  const [departureDate, setDepartureDate] = useState('');
+  const [departureTimeStr, setDepartureTimeStr] = useState('18:00');
+
   const [transport, setTransport] = useState('public');
   const [foodPrefs, setFoodPrefs] = useState('');
   const [sightseeingPrefs, setSightseeingPrefs] = useState('');
@@ -76,8 +81,11 @@ export const PlanPage: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    if (!destination || !arrivalTime || !departureTime || !transport) {
-      setError("请填写所有必填项（目的地、到达/离开时间、交通方式）");
+    const arrivalTime = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
+    const departureTime = departureDate ? `${departureDate}T${departureTimeStr}` : '';
+
+    if (!destination || !arrivalDate || !departureDate || !transport) {
+      setError("请填写所有必填项（目的地、到达/离开日期、交通方式）");
       return;
     }
 
@@ -149,40 +157,72 @@ export const PlanPage: React.FC = () => {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-400" />
-              到达目的地时间 <span className="text-rose-500">*</span>
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <label className="text-sm font-bold flex items-center gap-2 text-slate-700">
+              <Calendar className="w-4 h-4 text-emerald-500" />
+              到达目的地
             </label>
-            <input 
-              disabled={loading}
-              type="datetime-local" 
-              min={today}
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none disabled:bg-slate-50 disabled:text-slate-400 text-xs"
-              value={arrivalTime}
-              onChange={(e) => {
-                setArrivalTime(e.target.value);
-                validateDates(e.target.value, departureTime);
-              }}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <input 
+                disabled={loading}
+                type="date" 
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                value={arrivalDate}
+                onChange={(e) => {
+                  setArrivalDate(e.target.value);
+                  const fullArrival = e.target.value ? `${e.target.value}T${arrivalTimeStr}` : '';
+                  const fullDeparture = departureDate ? `${departureDate}T${departureTimeStr}` : '';
+                  validateDates(fullArrival, fullDeparture);
+                }}
+              />
+              <input 
+                disabled={loading}
+                type="time" 
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                value={arrivalTimeStr}
+                onChange={(e) => {
+                  setArrivalTimeStr(e.target.value);
+                  const fullArrival = arrivalDate ? `${arrivalDate}T${e.target.value}` : '';
+                  const fullDeparture = departureDate ? `${departureDate}T${departureTimeStr}` : '';
+                  validateDates(fullArrival, fullDeparture);
+                }}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-400" />
-              离开目的地时间 <span className="text-rose-500">*</span>
+
+          <div className="space-y-3">
+            <label className="text-sm font-bold flex items-center gap-2 text-slate-700">
+              <Calendar className="w-4 h-4 text-rose-500" />
+              离开目的地
             </label>
-            <input 
-              disabled={loading}
-              type="datetime-local" 
-              min={arrivalTime || today}
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none disabled:bg-slate-50 disabled:text-slate-400 text-xs"
-              value={departureTime}
-              onChange={(e) => {
-                setDepartureTime(e.target.value);
-                validateDates(arrivalTime, e.target.value);
-              }}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <input 
+                disabled={loading}
+                type="date" 
+                min={arrivalDate}
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                value={departureDate}
+                onChange={(e) => {
+                  setDepartureDate(e.target.value);
+                  const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
+                  const fullDeparture = e.target.value ? `${e.target.value}T${departureTimeStr}` : '';
+                  validateDates(fullArrival, fullDeparture);
+                }}
+              />
+              <input 
+                disabled={loading}
+                type="time" 
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                value={departureTimeStr}
+                onChange={(e) => {
+                  setDepartureTimeStr(e.target.value);
+                  const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
+                  const fullDeparture = departureDate ? `${departureDate}T${e.target.value}` : '';
+                  validateDates(fullArrival, fullDeparture);
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -306,6 +346,27 @@ export const PlanPage: React.FC = () => {
             <option value="medium">适中</option>
             <option value="high">紧凑</option>
           </select>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+          <div className="space-y-1">
+            <div className="text-sm font-semibold">灵活生成</div>
+            <div className="text-[10px] text-slate-500">
+              开启后 AI 将根据您的偏好自动优化行程，增减内容以确保行程更合理
+            </div>
+          </div>
+          <button 
+            onClick={() => setFlexible(!flexible)}
+            className={clsx(
+              "w-12 h-6 rounded-full transition-all relative flex-shrink-0",
+              flexible ? "bg-emerald-500" : "bg-slate-300"
+            )}
+          >
+            <div className={clsx(
+              "absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm",
+              flexible ? "left-7" : "left-1"
+            )} />
+          </button>
         </div>
       </div>
 

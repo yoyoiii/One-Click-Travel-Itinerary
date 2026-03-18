@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Itinerary": {
+      "title": "Travel Itinerary",
+      "description": "A planned travel itinerary",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "destination": { "type": "string" },
+        "arrivalTime": { "type": "string" },
+        "departureTime": { "type": "string" },
+        "transport": { "type": "string" },
+        "pace": { "type": "string" },
+        "name": { "type": "string" },
+        "days": { "type": "array" },
+        "paceWarning": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "destination", "days"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "/itineraries/{itineraryId}": {
+      "schema": "Itinerary",
+      "description": "Travel itineraries created by users"
+    }
+  }
+}

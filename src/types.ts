@@ -43,6 +43,7 @@ export interface WeatherInfo {
 
 export interface TravelItinerary {
   id?: string;
+  userId?: string;
   name?: string;
   destination: string;
   arrivalTime: string;
@@ -50,4 +51,5 @@ export interface TravelItinerary {
   days: ItineraryDay[];
   overallRouteSummary: string;
   paceWarning?: string;
+  createdAt?: string;
 }
