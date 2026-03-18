@@ -1,0 +1,5 @@
+{
+  "name": "One-Click Travel Itinerary",
+  "description": "Generate personalized travel itineraries with maps, weather, and restaurant recommendations using AI.",
+  "requestFramePermissions": ["geolocation"]
+}
