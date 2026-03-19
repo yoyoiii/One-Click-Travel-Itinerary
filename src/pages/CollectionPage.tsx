@@ -69,10 +69,6 @@ export const CollectionPage: React.FC = () => {
                   <Info className="w-4 h-4" />
                 </button>
               </div>
-              <div className="flex items-center gap-2 text-[10px] font-medium text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded-md">
-                <Check className="w-3 h-3" />
-                已保存
-              </div>
             </div>
           ))}
         </div>

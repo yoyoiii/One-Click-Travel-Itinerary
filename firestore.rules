@@ -1,32 +1,34 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    
     // ===============================================================
     // Assumed Data Model
     // ===============================================================
     //
     // Collection: users
-    // Document ID: userId (uid)
+    // Document ID: {userId}
     // Fields:
-    //   - uid: string (required) - User's unique ID
-    //   - email: string (required) - User's email address
-    //   - displayName: string (optional) - User's display name
-    //   - createdAt: timestamp (optional) - When the user was created
+    //   - uid: string (required, immutable) - The unique identifier for the user
+    //   - email: string (required) - The user's email address
+    //   - displayName: string (optional) - The user's display name
+    //   - createdAt: string (required, immutable) - The timestamp when the user was created
     //
     // Collection: itineraries
-    // Document ID: itineraryId
+    // Document ID: {itineraryId}
     // Fields:
-    //   - id: string (required) - Unique ID
-    //   - userId: string (required) - Owner's UID
-    //   - destination: string (required) - Destination name
-    //   - arrivalTime: string (optional) - Arrival time
-    //   - departureTime: string (optional) - Departure time
-    //   - transport: string (optional) - Transport mode
-    //   - pace: string (optional) - Travel pace
-    //   - name: string (optional) - Itinerary name
-    //   - days: list (required) - List of day objects
-    //   - paceWarning: string (optional) - Pace warning message
-    //   - createdAt: timestamp (optional) - Creation timestamp
+    //   - userId: string (required, immutable) - The UID of the user who created the itinerary
+    //   - name: string (optional) - The name of the itinerary
+    //   - destination: string (required) - The destination of the trip
+    //   - arrivalTime: string (required) - The arrival time
+    //   - departureTime: string (required) - The departure time
+    //   - days: list (required) - The daily itinerary details
+    //   - overallRouteSummary: string (required) - A summary of the overall route
+    //   - paceWarning: string (optional) - A warning about the pace of the trip
+    //   - cafesAndTea: list (optional) - Recommended cafes and tea shops
+    //   - bakeriesAndDesserts: list (optional) - Recommended bakeries and dessert shops
+    //   - createdAt: string (required, immutable) - The timestamp when the itinerary was created
     //
     // ===============================================================
 
@@ -34,46 +36,65 @@ service cloud.firestore {
     // Helper Functions
     // ===============================================================
     
+    // Check if the user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
-
+    
+    // Check if user owns the resource (for user-owned documents)
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-
+    
+    // Check if user is owner based on document's userId field
     function isDocOwner() {
       return isAuthenticated() && request.auth.uid == resource.data.userId;
     }
-
-    function isAdmin() {
-      return isAuthenticated() &&
-        (request.auth.token.email == "ueeezhang@gmail.com" || 
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    
+    // Validate required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
     }
-
+    
+    // Validate that the document contains only the allowed fields
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    
+    // Validate email format
     function isValidEmail(email) {
-      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
     }
 
     // ===============================================================
     // Domain Validators
     // ===============================================================
-
+    
     function isValidUser(data) {
-      return data.keys().hasAll(['uid', 'email']) &&
-             data.uid == request.auth.uid &&
-             isValidEmail(data.email) &&
-             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100));
+      return hasRequiredFields(['uid', 'email', 'createdAt']) &&
+             hasOnlyAllowedFields(['uid', 'email', 'displayName', 'createdAt']) &&
+             data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             data.email is string && isValidEmail(data.email) && data.email.size() < 256 &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             data.createdAt is string && data.createdAt.size() < 50;
     }
 
     function isValidItinerary(data) {
-      return data.keys().hasAll(['userId', 'destination', 'days']) &&
-             data.userId == request.auth.uid &&
-             data.destination is string && data.destination.size() < 200 &&
+      return hasRequiredFields(['userId', 'destination', 'arrivalTime', 'departureTime', 'days', 'overallRouteSummary', 'createdAt']) &&
+             hasOnlyAllowedFields(['userId', 'name', 'destination', 'arrivalTime', 'departureTime', 'days', 'overallRouteSummary', 'paceWarning', 'cafesAndTea', 'bakeriesAndDesserts', 'createdAt', 'id']) &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() < 128 &&
+             (!('name' in data) || (data.name is string && data.name.size() < 200)) &&
+             data.destination is string && data.destination.size() > 0 && data.destination.size() < 200 &&
+             data.arrivalTime is string && data.arrivalTime.size() > 0 && data.arrivalTime.size() < 50 &&
+             data.departureTime is string && data.departureTime.size() > 0 && data.departureTime.size() < 50 &&
              data.days is list && data.days.size() <= 30 &&
-             (!('name' in data) || (data.name is string && data.name.size() < 200));
+             data.overallRouteSummary is string && data.overallRouteSummary.size() > 0 && data.overallRouteSummary.size() < 5000 &&
+             (!('paceWarning' in data) || (data.paceWarning is string && data.paceWarning.size() < 1000)) &&
+             (!('cafesAndTea' in data) || (data.cafesAndTea is list && data.cafesAndTea.size() <= 20)) &&
+             (!('bakeriesAndDesserts' in data) || (data.bakeriesAndDesserts is list && data.bakeriesAndDesserts.size() <= 20)) &&
+             data.createdAt is string && data.createdAt.size() < 50 &&
+             (!('id' in data) || (data.id is string && data.id.size() < 128));
     }
 
     // ===============================================================
@@ -81,19 +102,27 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && isValidUser(request.resource.data);
-      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
-                      request.resource.data.uid == resource.data.uid;
-      allow delete: if isAdmin();
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && 
+                    isValidUser(request.resource.data) &&
+                    request.resource.data.uid == userId;
+      allow update: if isOwner(userId) && 
+                    isValidUser(request.resource.data) &&
+                    request.resource.data.uid == resource.data.uid &&
+                    request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false; // Users shouldn't be deleted directly from client
     }
 
     match /itineraries/{itineraryId} {
-      allow read: if isDocOwner() || isAdmin();
-      allow create: if isAuthenticated() && isValidItinerary(request.resource.data);
-      allow update: if isDocOwner() && isValidItinerary(request.resource.data) && 
-                      request.resource.data.userId == resource.data.userId;
-      allow delete: if isDocOwner() || isAdmin();
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    isValidItinerary(request.resource.data);
+      allow update: if isDocOwner() && 
+                    request.resource.data.userId == resource.data.userId &&
+                    request.resource.data.createdAt == resource.data.createdAt &&
+                    isValidItinerary(request.resource.data);
+      allow delete: if isDocOwner();
     }
   }
 }

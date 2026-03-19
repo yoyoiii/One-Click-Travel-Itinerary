@@ -84,7 +84,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...item, 
       userId: user.uid,
       name: name || item.name || `${item.destination}之旅 (${(item.arrivalTime || (item as any).startDate || '').split('T')[0]})`,
-      createdAt: new Date().toISOString()
+      createdAt: item.createdAt || new Date().toISOString()
     };
     
     try {

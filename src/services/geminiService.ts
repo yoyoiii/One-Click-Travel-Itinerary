@@ -40,6 +40,8 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
   3. For each day, provide an "accommodation" object. If "Stay in car" was selected, suggest a safe and legal "campsite" or parking spot for that night.
   4. If the arrival/departure times or the user's preferences conflict with the chosen "Pace" strategy (e.g., arriving late but choosing 'high' pace), provide a friendly "paceWarning" message in the root of the JSON.
   5. Ensure all times in activities are realistic and follow the pace strategy if possible.
+  6. You MUST consider the user's "Food Preferences" when planning the three meals (breakfast, lunch, dinner) each day. Instead of putting detailed restaurant recommendations inside the 'activities' array, you MUST put the recommended restaurants for the three meals into the 'restaurants' array (which represents the "美食推荐" / Food Recommendations module). For each restaurant, specify the 'mealType' (e.g., "早餐", "午餐", "晚餐"). You can still include a brief 'food' type activity in the 'activities' array (e.g., "前往餐厅享用午餐"), but the actual restaurant details MUST go into the 'restaurants' array.
+  7. Provide recommendations for destination specialty milk tea and coffee shops ("cafesAndTea"), and specialty bakeries and dessert shops ("bakeriesAndDesserts") at the root level of the JSON. If there are no good recommendations, omit the arrays or leave them empty.
 
   Please provide the response strictly in the following JSON format:
   {
@@ -47,6 +49,22 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
     "arrivalTime": "string",
     "departureTime": "string",
     "paceWarning": "string (optional, only if conflicts exist)",
+    "cafesAndTea": [
+      {
+        "name": "string",
+        "description": "string",
+        "address": "string",
+        "rating": number
+      }
+    ],
+    "bakeriesAndDesserts": [
+      {
+        "name": "string",
+        "description": "string",
+        "address": "string",
+        "rating": number
+      }
+    ],
     "days": [
       {
         "day": number,
@@ -80,7 +98,8 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
             "reviews": number,
             "cuisine": "string",
             "description": "string",
-            "address": "string"
+            "address": "string",
+            "mealType": "string (e.g., 早餐, 午餐, 晚餐)"
           }
         ]
       }

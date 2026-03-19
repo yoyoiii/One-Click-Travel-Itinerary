@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     await updateProfile(newUser, { displayName: defaultDisplayName });
     // Force user state refresh
-    setUser({ ...newUser, displayName: defaultDisplayName });
+    setUser({ ...newUser, displayName: defaultDisplayName } as User);
   };
 
   const updateUsername = async (newUsername: string) => {
@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, { merge: true });
     
     // Refresh local user state
-    setUser({ ...auth.currentUser, displayName: newUsername });
+    setUser({ ...auth.currentUser, displayName: newUsername } as User);
   };
 
   const logout = async () => {

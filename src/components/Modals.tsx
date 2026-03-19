@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Loader2 } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ModalProps {
   cancelText?: string;
   onConfirm?: () => void;
   confirmColor?: string;
+  isLoading?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({ 
@@ -22,7 +24,8 @@ export const Modal: React.FC<ModalProps> = ({
   confirmText = "确定", 
   cancelText = "取消", 
   onConfirm,
-  confirmColor = "bg-emerald-500 shadow-emerald-200"
+  confirmColor = "bg-slate-800 shadow-slate-200",
+  isLoading = false
 }) => {
   return (
     <AnimatePresence>
@@ -47,14 +50,17 @@ export const Modal: React.FC<ModalProps> = ({
               {onConfirm && (
                 <button 
                   onClick={onConfirm}
-                  className={`w-full py-3 ${confirmColor} text-white rounded-xl font-bold shadow-lg`}
+                  disabled={isLoading}
+                  className={`w-full py-3 ${confirmColor} text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
+                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                   {confirmText}
                 </button>
               )}
               <button 
                 onClick={onClose}
-                className="w-full py-3 bg-slate-100 text-slate-500 rounded-xl font-bold"
+                disabled={isLoading}
+                className="w-full py-3 bg-slate-100 text-slate-500 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cancelText}
               </button>

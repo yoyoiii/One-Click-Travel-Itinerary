@@ -33,12 +33,20 @@ export interface Restaurant {
   description: string;
   address: string;
   mapUrl?: string;
+  mealType?: string;
 }
 
 export interface WeatherInfo {
   temp: string;
   condition: string;
   description: string;
+}
+
+export interface ShopRecommendation {
+  name: string;
+  description: string;
+  address?: string;
+  rating?: number;
 }
 
 export interface TravelItinerary {
@@ -51,5 +59,7 @@ export interface TravelItinerary {
   days: ItineraryDay[];
   overallRouteSummary: string;
   paceWarning?: string;
+  cafesAndTea?: ShopRecommendation[];
+  bakeriesAndDesserts?: ShopRecommendation[];
   createdAt?: string;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Search, MapPin, LogOut, User as UserIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -11,27 +11,30 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  const isDetailPage = location.pathname === '/detail';
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative flex flex-col">
-        <main className="flex-1 overflow-y-auto pb-24">
+        <main className={clsx("flex-1 overflow-y-auto", !isDetailPage && "pb-24")}>
           {children}
         </main>
 
         {/* Bottom Navigation */}
-        {user && (
+        {user && !isDetailPage && (
           <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/80 backdrop-blur-lg border-t border-slate-100 p-3 flex items-center justify-around z-40">
             <NavLink 
               to="/"
               className={({ isActive }) => clsx(
                 "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
-                isActive ? "text-emerald-600 bg-emerald-50 px-6" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-slate-900 bg-slate-100 px-6" : "text-slate-400 hover:text-slate-600"
               )}
             >
               <Search className="w-5 h-5" />
@@ -41,7 +44,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               to="/collection"
               className={({ isActive }) => clsx(
                 "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
-                isActive ? "text-emerald-600 bg-emerald-50 px-6" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-slate-900 bg-slate-100 px-6" : "text-slate-400 hover:text-slate-600"
               )}
             >
               <MapPin className="w-5 h-5" />
@@ -51,7 +54,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               to="/profile"
               className={({ isActive }) => clsx(
                 "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
-                isActive ? "text-emerald-600 bg-emerald-50 px-6" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-slate-900 bg-slate-100 px-6" : "text-slate-400 hover:text-slate-600"
               )}
             >
               <UserIcon className="w-5 h-5" />
