@@ -7,7 +7,7 @@ export interface GenerateParams {
   destination: string;
   arrivalTime: string;
   departureTime: string;
-  transport: string;
+  transport: string[];
   foodPrefs?: string;
   sightseeingPrefs?: string;
   accommodationType: 'hotel' | 'homestay' | 'car';
@@ -22,7 +22,7 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
   const prompt = `Generate a detailed travel itinerary for a trip to ${params.destination}.
   Arrival Time: ${params.arrivalTime}
   Departure Time: ${params.departureTime}
-  Transportation: ${params.transport}
+  Transportation: ${params.transport.join(', ')} (These are the user's chosen modes of transport at the destination. You MUST provide specific suggestions for traveling between locations using ONLY these modes. Explicitly account for both the travel time and estimated cost in your schedule and route descriptions.)
   Pace: ${params.pace} (Strategy: ${
     params.pace === 'low' ? 'Leisure - Start after 10:00, return before 21:00' : 
     params.pace === 'high' ? 'Compact - Start before 08:00, return after 22:00' : 

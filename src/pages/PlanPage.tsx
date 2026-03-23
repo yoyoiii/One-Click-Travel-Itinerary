@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   MapPin, 
@@ -16,28 +16,42 @@ import { format } from 'date-fns';
 import { clsx } from 'clsx';
 import { generateItinerary } from '../services/geminiService';
 import { useTravel } from '../context/TravelContext';
-
-const CHINA_REGIONS = [
-  '北京市', '上海市', '天津市', '重庆市',
-  '广东省-广州市', '广东省-深圳市', '广东省-珠海市',
-  '浙江省-杭州市', '浙江省-宁波市', '浙江省-温州市',
-  '江苏省-南京市', '江苏省-苏州市', '江苏省-无锡市',
-  '四川省-成都市', '湖北省-武汉市', '陕西省-西安市',
-  '湖南省-长沙市', '福建省-福州市', '福建省-厦门市',
-  '云南省-昆明市', '云南省-大理市', '云南省-丽江市',
-  '山东省-济南市', '山东省-青岛市', '河南省-郑州市',
-  '辽宁省-沈阳市', '辽宁省-大连市', '黑龙江省-哈尔滨市',
-  '吉林省-长春市', '安徽省-合肥市', '江西南昌市',
-  '广西南宁市', '广西桂林市', '海南省-海口市', '海南省-三亚市',
-  '贵州省-贵阳市', '甘肃省-兰州市', '青海省-西宁市',
-  '宁夏-银川市', '新疆-乌鲁木齐市', '西藏-拉萨市', '内蒙古-呼和浩特市'
-];
+import { chineseCities, allCities } from '../data/cities';
 
 export const PlanPage: React.FC = () => {
   const navigate = useNavigate();
   const { setCurrentItinerary } = useTravel();
 
-  const [destination, setDestination] = useState(CHINA_REGIONS[0]);
+  const [destination, setDestination] = useState('');
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Filter cities based on search
+  const filteredCities = useMemo(() => {
+    if (!citySearch) return chineseCities;
+    return chineseCities.map(province => {
+      const matchingCities = province.cities.filter(city => 
+        city.toLowerCase().includes(citySearch.toLowerCase()) || 
+        province.province.toLowerCase().includes(citySearch.toLowerCase())
+      );
+      return {
+        ...province,
+        cities: matchingCities
+      };
+    }).filter(province => province.cities.length > 0);
+  }, [citySearch]);
+
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowCityDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   
   // Split arrival and departure into date and time
   const [arrivalDate, setArrivalDate] = useState('');
@@ -45,7 +59,7 @@ export const PlanPage: React.FC = () => {
   const [departureDate, setDepartureDate] = useState('');
   const [departureTimeStr, setDepartureTimeStr] = useState('18:00');
 
-  const [transport, setTransport] = useState('public');
+  const [transport, setTransport] = useState<string[]>([]);
   const [foodPrefs, setFoodPrefs] = useState('');
   const [sightseeingPrefs, setSightseeingPrefs] = useState('');
   const [accommodationType, setAccommodationType] = useState<'hotel' | 'homestay' | 'car'>('hotel');
@@ -84,7 +98,7 @@ export const PlanPage: React.FC = () => {
     const arrivalTime = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
     const departureTime = departureDate ? `${departureDate}T${departureTimeStr}` : '';
 
-    if (!destination || !arrivalDate || !departureDate || !transport) {
+    if (!destination || !arrivalDate || !departureDate || transport.length === 0) {
       setError("请填写所有必填项（目的地、到达/离开日期、交通方式）");
       return;
     }
@@ -98,11 +112,18 @@ export const PlanPage: React.FC = () => {
     abortControllerRef.current = controller;
 
     try {
+      const transportLabels = transport.map(t => {
+        if (t === 'public-taxi') return '公共交通/打车';
+        if (t === 'rental') return '租车';
+        if (t === 'self-driving') return '自驾';
+        return t;
+      });
+
       const result = await generateItinerary({
         destination,
         arrivalTime,
         departureTime,
-        transport,
+        transport: transportLabels,
         foodPrefs,
         sightseeingPrefs,
         accommodationType,
@@ -145,16 +166,54 @@ export const PlanPage: React.FC = () => {
             <MapPin className="w-4 h-4 text-slate-400" />
             目的地 <span className="text-rose-500">*</span>
           </label>
-          <select 
-            disabled={loading}
-            className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white appearance-none cursor-pointer disabled:bg-slate-50 disabled:text-slate-400"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-          >
-            {CHINA_REGIONS.map(region => (
-              <option key={region} value={region}>{region}</option>
-            ))}
-          </select>
+          <div className="relative" ref={dropdownRef}>
+            <input
+              type="text"
+              disabled={loading}
+              placeholder="请选择此次旅行目的地"
+              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm disabled:bg-slate-50 disabled:text-slate-400"
+              value={showCityDropdown ? citySearch : destination}
+              onChange={(e) => {
+                setCitySearch(e.target.value);
+                setShowCityDropdown(true);
+              }}
+              onFocus={() => {
+                setCitySearch(destination);
+                setShowCityDropdown(true);
+              }}
+            />
+            {showCityDropdown && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                {filteredCities.length > 0 ? (
+                  filteredCities.map(group => (
+                    <div key={group.province}>
+                      <div className="px-3 py-1 bg-slate-50 text-xs font-bold text-slate-500 sticky top-0">
+                        {group.province}
+                      </div>
+                      {group.cities.map(city => {
+                        const fullCityName = `${group.province}-${city}`;
+                        return (
+                          <div
+                            key={fullCityName}
+                            className="p-3 hover:bg-slate-100 cursor-pointer text-sm pl-4"
+                            onClick={() => {
+                              setDestination(fullCityName);
+                              setShowCityDropdown(false);
+                              setCitySearch('');
+                            }}
+                          >
+                            {city}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 text-slate-400 text-sm text-center">未找到匹配的城市</div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -167,8 +226,10 @@ export const PlanPage: React.FC = () => {
               <input 
                 disabled={loading}
                 type="date" 
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                min={today.split('T')[0]}
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
                 value={arrivalDate}
+                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
                 onChange={(e) => {
                   setArrivalDate(e.target.value);
                   const fullArrival = e.target.value ? `${e.target.value}T${arrivalTimeStr}` : '';
@@ -179,8 +240,9 @@ export const PlanPage: React.FC = () => {
               <input 
                 disabled={loading}
                 type="time" 
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
                 value={arrivalTimeStr}
+                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
                 onChange={(e) => {
                   setArrivalTimeStr(e.target.value);
                   const fullArrival = arrivalDate ? `${arrivalDate}T${e.target.value}` : '';
@@ -201,8 +263,9 @@ export const PlanPage: React.FC = () => {
                 disabled={loading}
                 type="date" 
                 min={arrivalDate}
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
                 value={departureDate}
+                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
                 onChange={(e) => {
                   setDepartureDate(e.target.value);
                   const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
@@ -213,8 +276,9 @@ export const PlanPage: React.FC = () => {
               <input 
                 disabled={loading}
                 type="time" 
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
                 value={departureTimeStr}
+                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
                 onChange={(e) => {
                   setDepartureTimeStr(e.target.value);
                   const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
@@ -233,18 +297,24 @@ export const PlanPage: React.FC = () => {
           </label>
           <div className="grid grid-cols-3 gap-2">
             {[
+              { id: 'public-taxi', label: '公共交通/打车', icon: Bus },
+              { id: 'rental', label: '租车', icon: Car },
               { id: 'self-driving', label: '自驾', icon: Car },
-              { id: 'public', label: '公共交通', icon: Bus },
-              { id: 'rental', label: '租车/打车', icon: Car },
             ].map((mode) => (
               <button
                 key={mode.id}
                 disabled={loading}
-                onClick={() => setTransport(mode.id)}
+                onClick={() => {
+                  setTransport(prev => 
+                    prev.includes(mode.id) 
+                      ? prev.filter(t => t !== mode.id)
+                      : [...prev, mode.id]
+                  );
+                }}
                 className={clsx(
                   "flex flex-col items-center justify-center p-3 rounded-xl border transition-all gap-1",
-                  transport === mode.id 
-                    ? "bg-emerald-50 border-emerald-500 text-emerald-700" 
+                  transport.includes(mode.id) 
+                    ? "bg-slate-800 border-slate-800 text-white shadow-md" 
                     : "bg-white border-slate-200 text-slate-500 hover:border-slate-300",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
