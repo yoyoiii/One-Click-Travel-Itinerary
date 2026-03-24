@@ -1,5 +1,7 @@
 {
-  "name": "One-Click Travel Itinerary",
-  "description": "Generate personalized travel itineraries with maps, weather, and restaurant recommendations using AI.",
-  "requestFramePermissions": ["geolocation"]
+  "name": "One Click Travel Itinerary",
+  "description": "Retro-futuristic AI-powered travel itinerary generator.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

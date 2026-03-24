@@ -21,46 +21,48 @@ export const Modal: React.FC<ModalProps> = ({
   title, 
   description, 
   children, 
-  confirmText = "确定", 
+  confirmText = "确认", 
   cancelText = "取消", 
   onConfirm,
-  confirmColor = "bg-slate-800 shadow-slate-200",
+  confirmColor = "bg-[var(--accent)] text-white",
   isLoading = false
 }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[var(--bg-base)]/60 backdrop-blur-sm">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl space-y-6"
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="clean-card p-8 w-full max-w-sm space-y-6 relative overflow-hidden"
           >
-            <div className="space-y-2 text-center">
-              <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+            <div className="space-y-2 text-center relative z-10">
+              <h3 className="text-2xl font-bold text-[var(--text-base)]">{title}</h3>
               {description && (
-                <p className="text-sm text-slate-500 leading-relaxed">
+                <p className="text-sm font-medium text-[var(--text-muted)] leading-relaxed">
                   {description}
                 </p>
               )}
             </div>
-            {children}
-            <div className="flex flex-col gap-2">
+            <div className="relative z-10">
+              {children}
+            </div>
+            <div className="flex flex-col gap-3 relative z-10">
               {onConfirm && (
                 <button 
                   onClick={onConfirm}
                   disabled={isLoading}
-                  className={`w-full py-3 ${confirmColor} text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold text-sm py-4 rounded-2xl ${confirmColor}`}
                 >
-                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
                   {confirmText}
                 </button>
               )}
               <button 
                 onClick={onClose}
                 disabled={isLoading}
-                className="w-full py-3 bg-slate-100 text-slate-500 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full clean-btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cancelText}
               </button>

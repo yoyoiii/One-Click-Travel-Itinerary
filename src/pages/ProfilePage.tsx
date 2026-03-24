@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, LogOut, ChevronRight, Edit2, Check, X } from 'lucide-react';
+import { Mail, LogOut, ChevronRight, Edit2, Check, X, Moon, Sun } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useTheme } from '../context/ThemeContext';
 
 export const ProfilePage: React.FC = () => {
   const { user, logout, updateUsername } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState(user?.displayName || '');
+
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = async () => {
     await logout();
@@ -31,23 +34,32 @@ export const ProfilePage: React.FC = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-8 space-y-12"
+      className="p-4 space-y-6 animate-reveal min-h-full bg-[var(--bg-base)] pb-24"
     >
+      <header className="mb-4">
+        <h1 className="text-2xl font-bold text-[var(--text-base)]">
+          我的主页
+        </h1>
+        <p className="text-[var(--text-muted)] mt-1 font-medium text-xs uppercase tracking-wider">
+          Account Settings
+        </p>
+      </header>
+
       {/* User Info Section */}
-      <div className="pt-12 space-y-4">
-        <div className="flex items-center justify-between group">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between group bg-white p-5 rounded-2xl clean-card border border-[var(--border)]">
           {isEditing ? (
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center gap-3 w-full">
               <input
                 type="text"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                className="text-3xl font-bold text-slate-900 tracking-tight bg-slate-50 border-b-2 border-emerald-500 outline-none w-full py-1"
+                className="clean-input flex-1 text-base font-black"
                 autoFocus
               />
               <button 
                 onClick={handleUpdateUsername}
-                className="p-2 bg-emerald-500 text-white rounded-full hover:bg-emerald-600 transition-colors"
+                className="p-3 bg-[var(--accent)] text-white rounded-xl hover:bg-[var(--accent)]/90 transition-all border border-[var(--accent)]"
               >
                 <Check className="w-5 h-5" />
               </button>
@@ -56,53 +68,54 @@ export const ProfilePage: React.FC = () => {
                   setIsEditing(false);
                   setNewUsername(user.displayName || '');
                 }}
-                className="p-2 bg-slate-200 text-slate-600 rounded-full hover:bg-slate-300 transition-colors"
+                className="p-3 bg-[var(--bg-base)] text-[var(--text-base)] rounded-xl hover:bg-[var(--border)] transition-all border border-[var(--border)]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-xl font-black text-[var(--text-base)] truncate tracking-tight">
                 {user.displayName || user.email?.split('@')[0]}
-              </h1>
+              </h2>
               <button 
                 onClick={() => setIsEditing(true)}
-                className="p-2 text-slate-400 hover:text-emerald-500 transition-colors opacity-0 group-hover:opacity-100"
+                className="p-2 text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-light)] rounded-xl transition-all border border-transparent hover:border-[var(--accent-light)]"
               >
                 <Edit2 className="w-5 h-5" />
               </button>
             </>
           )}
         </div>
-        <div className="flex items-center gap-2 text-slate-500 font-medium">
-          <Mail className="w-4 h-4" />
+        <div className="flex items-center gap-3 text-[var(--text-muted)] text-xs font-bold bg-white p-4 rounded-2xl clean-card border border-[var(--border)]">
+          <Mail className="w-5 h-5 text-[var(--accent)]" />
           {user.email}
         </div>
       </div>
 
-      <div className="h-px bg-slate-100 w-full" />
-
       {/* Action Section */}
-      <div className="space-y-4">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">
-          账户操作
+      <div className="space-y-4 pt-2">
+        <p className="text-[10px] font-black text-[var(--text-muted)] px-2 uppercase tracking-widest">
+          系统设置
         </p>
+        
         <button 
           onClick={handleLogout}
-          className="w-full flex items-center justify-between p-5 bg-slate-50 hover:bg-slate-100 text-rose-600 font-bold rounded-2xl transition-all group"
+          className="w-full flex items-center justify-between p-5 bg-white rounded-2xl clean-card hover:bg-red-50 transition-all group border border-[var(--border)] hover:border-red-100"
         >
-          <div className="flex items-center gap-3">
-            <LogOut className="w-5 h-5" />
-            <span>退出当前账号</span>
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center border border-red-50">
+              <LogOut className="w-5 h-5 text-red-500" />
+            </div>
+            <span className="font-black text-sm text-red-500 uppercase tracking-wider">退出登录</span>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+          <ChevronRight className="w-5 h-5 text-red-300 group-hover:text-red-500 transition-all" />
         </button>
       </div>
 
-      <div className="pt-24 text-center">
-        <p className="text-[10px] text-slate-300 font-bold uppercase tracking-[0.2em]">
-          Travel AI Assistant v1.0.0
+      <div className="pt-8 text-center">
+        <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
+          One Click Travel v2.0
         </p>
       </div>
     </motion.div>

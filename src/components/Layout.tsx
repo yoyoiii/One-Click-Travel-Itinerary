@@ -1,6 +1,6 @@
 import React from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Search, MapPin, LogOut, User as UserIcon } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Search, MapPin, User as UserIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,56 +9,50 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const location = useLocation();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
 
   const isDetailPage = location.pathname === '/detail';
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative flex flex-col">
+    <div className="min-h-screen relative bg-[var(--bg-base)]">
+      <div className="max-w-md mx-auto min-h-screen relative flex flex-col bg-[var(--bg-base)]">
         <main className={clsx("flex-1 overflow-y-auto", !isDetailPage && "pb-24")}>
           {children}
         </main>
 
         {/* Bottom Navigation */}
         {user && !isDetailPage && (
-          <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/80 backdrop-blur-lg border-t border-slate-100 p-3 flex items-center justify-around z-40">
+          <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[calc(28rem-2rem)] glass-panel rounded-[2.5rem] p-2 flex items-center justify-around z-40">
             <NavLink 
               to="/"
               className={({ isActive }) => clsx(
-                "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
-                isActive ? "text-slate-900 bg-slate-100 px-6" : "text-slate-400 hover:text-slate-600"
+                "flex flex-col items-center gap-1.5 p-2.5 transition-all w-24 rounded-2xl",
+                isActive ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)] hover:bg-[var(--bg-base)]"
               )}
             >
               <Search className="w-5 h-5" />
-              <span className="text-[10px] font-bold">规划行程</span>
+              <span className="text-[11px] font-black">规划</span>
             </NavLink>
             <NavLink 
               to="/collection"
               className={({ isActive }) => clsx(
-                "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
-                isActive ? "text-slate-900 bg-slate-100 px-6" : "text-slate-400 hover:text-slate-600"
+                "flex flex-col items-center gap-1.5 p-2.5 transition-all w-24 rounded-2xl",
+                isActive ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)] hover:bg-[var(--bg-base)]"
               )}
             >
               <MapPin className="w-5 h-5" />
-              <span className="text-[10px] font-bold">旅行集</span>
+              <span className="text-[11px] font-black">收藏</span>
             </NavLink>
             <NavLink 
               to="/profile"
               className={({ isActive }) => clsx(
-                "flex flex-col items-center gap-1 p-2 rounded-2xl transition-all",
-                isActive ? "text-slate-900 bg-slate-100 px-6" : "text-slate-400 hover:text-slate-600"
+                "flex flex-col items-center gap-1.5 p-2.5 transition-all w-24 rounded-2xl",
+                isActive ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)] hover:bg-[var(--bg-base)]"
               )}
             >
               <UserIcon className="w-5 h-5" />
-              <span className="text-[10px] font-bold">我</span>
+              <span className="text-[11px] font-black">我的</span>
             </NavLink>
           </nav>
         )}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Info, Check } from 'lucide-react';
+import { MapPin, Trash2 } from 'lucide-react';
 import { useTravel } from '../context/TravelContext';
 import { Modal } from '../components/Modals';
 
@@ -26,47 +26,58 @@ export const CollectionPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <header className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">我的旅行集</h1>
-          <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
+    <div className="p-4 space-y-6 animate-reveal pb-24">
+      <header className="mb-4">
+        <div className="flex items-end justify-between mb-1">
+          <h1 className="text-2xl font-bold text-[var(--text-base)]">
+            我的收藏
+          </h1>
+          <div className="bg-[var(--accent-light)] text-[var(--accent)] px-2 py-0.5 text-[10px] font-bold rounded-md">
             {savedItineraries.length} 个行程
           </div>
         </div>
-        <p className="text-slate-500 text-sm">回顾并管理您的所有旅行计划</p>
+        <p className="text-[var(--text-muted)] font-medium text-xs uppercase tracking-wider">
+          Saved Plans
+        </p>
       </header>
 
       {savedItineraries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4">
-          <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center">
-            <MapPin className="w-8 h-8" />
+        <div className="flex flex-col items-center justify-center py-16 text-[var(--text-muted)] space-y-3 bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
+          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+            <MapPin className="w-6 h-6 text-[var(--border)]" />
           </div>
-          <p className="text-sm">还没有保存的攻略，快去规划一个吧！</p>
+          <p className="text-xs font-medium text-center">还没有收藏的行程<br/>去规划一个新的吧</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-4">
           {savedItineraries.map((item) => (
             <div 
               key={item.id}
-              className="p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+              className="clean-card p-5 cursor-pointer group bg-white border border-[var(--border)] hover:border-[var(--accent)] transition-all"
               onClick={() => {
                 setCurrentItinerary(item);
                 navigate('/detail');
               }}
             >
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-slate-900 truncate">{item.name || `${item.destination}之旅`}</h3>
-                  <p className="text-[10px] text-slate-500">
-                    {(item.arrivalTime || (item as any).startDate || '').replace('T', ' ')} 至 {(item.departureTime || (item as any).endDate || '').replace('T', ' ')}
-                  </p>
+              <div className="flex justify-between items-start">
+                <div className="flex-1 min-w-0 pr-4">
+                  <h3 className="font-black text-base text-[var(--text-base)] truncate mb-2 group-hover:text-[var(--accent)] transition-colors">{item.name || `${item.destination} 行程`}</h3>
+                  <div className="text-[10px] font-black text-[var(--text-muted)] space-y-1 uppercase tracking-widest">
+                    <p className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      {(item.arrivalTime || (item as any).startDate || '').replace('T', ' ')}
+                    </p>
+                    <p className="flex items-center gap-2 opacity-40">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                      {(item.departureTime || (item as any).endDate || '').replace('T', ' ')}
+                    </p>
+                  </div>
                 </div>
                 <button 
                   onClick={(e) => handleDeleteClick(e, item.id!)}
-                  className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                  className="p-2.5 text-[var(--text-muted)] hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
                 >
-                  <Info className="w-4 h-4" />
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -78,10 +89,10 @@ export const CollectionPage: React.FC = () => {
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={confirmDelete}
-        title="删除攻略？"
-        description="确定要删除这条攻略吗？删除后将无法恢复。"
-        confirmText="确定删除"
-        confirmColor="bg-rose-500 shadow-rose-200"
+        title="删除行程？"
+        description="确定要删除这个行程吗？此操作无法撤销。"
+        confirmText="删除"
+        confirmColor="bg-red-500 text-white"
       />
     </div>
   );

@@ -65,51 +65,53 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-8 flex flex-col justify-center min-h-[80vh]">
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-100">
-          <MapPin className="w-8 h-8 text-white" />
+    <div className="p-4 space-y-8 flex flex-col justify-center min-h-screen relative animate-reveal bg-[var(--bg-base)]">
+      <div className="text-center space-y-3 relative z-10">
+        <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 border border-[var(--border)]">
+          <MapPin className="w-8 h-8 text-[var(--accent)]" />
         </div>
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900">开启新旅程</h1>
-          <p className="text-slate-500 text-sm">注册一个账号以保存您的旅行计划</p>
+          <h1 className="text-2xl font-bold text-[var(--text-base)]">
+            创建账号
+          </h1>
+          <p className="text-[var(--text-muted)] font-bold text-[10px] uppercase tracking-widest">Create Account</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">邮箱</label>
+      <form onSubmit={handleSubmit} className="space-y-4 relative z-10 max-w-sm mx-auto w-full">
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-[var(--text-base)] ml-0.5">邮箱地址</label>
           <input 
             type="email"
-            className="w-full p-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+            className="clean-input"
             placeholder="输入您的邮箱"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">密码</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-[var(--text-base)] ml-0.5">密码</label>
           <input 
             type="password"
-            className="w-full p-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-            placeholder="输入您的密码"
+            className="clean-input"
+            placeholder="创建密码"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">确认密码</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-[var(--text-base)] ml-0.5">确认密码</label>
           <input 
             type="password"
-            className="w-full p-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-            placeholder="再次输入您的密码"
+            className="clean-input"
+            placeholder="再次输入密码"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
 
         {error && (
-          <div className="p-4 bg-rose-50 text-rose-600 text-xs rounded-xl border border-rose-100">
+          <div className="p-3 bg-red-50 text-red-500 rounded-lg font-semibold text-xs">
             {error}
           </div>
         )}
@@ -117,24 +119,24 @@ export const RegisterPage: React.FC = () => {
         <button
           disabled={loading || googleLoading}
           type="submit"
-          className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors disabled:opacity-50"
+          className="clean-btn-primary mt-4"
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <>
               注册
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>
 
         <div className="relative py-4">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-100"></div>
+            <div className="w-full border-t border-[var(--border)]"></div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-slate-400 font-bold">或者</span>
+          <div className="relative flex justify-center text-[10px]">
+            <span className="bg-[var(--bg-base)] px-3 text-[var(--text-muted)] font-bold uppercase tracking-wider">或</span>
           </div>
         </div>
 
@@ -142,24 +144,24 @@ export const RegisterPage: React.FC = () => {
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading || googleLoading}
-          className="w-full py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 transition-colors disabled:opacity-50"
+          className="clean-btn-secondary"
         >
           {googleLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <>
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-              使用 Google 账号继续
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4" />
+              使用 Google 登录
             </>
           )}
         </button>
       </form>
 
-      <div className="text-center">
-        <p className="text-sm text-slate-500">
+      <div className="text-center relative z-10 pt-2">
+        <p className="text-xs font-medium text-[var(--text-muted)]">
           已有账号？{' '}
-          <Link to="/login" className="text-emerald-600 font-bold hover:underline">
-            立即登录
+          <Link to="/login" className="text-[var(--accent)] hover:underline font-bold">
+            去登录
           </Link>
         </p>
       </div>

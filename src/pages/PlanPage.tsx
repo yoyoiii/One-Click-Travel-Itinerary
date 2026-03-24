@@ -10,7 +10,10 @@ import {
   ArrowRight, 
   Navigation, 
   Loader2,
-  Settings2
+  Settings2,
+  Sparkles,
+  Search,
+  Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { clsx } from 'clsx';
@@ -78,7 +81,7 @@ export const PlanPage: React.FC = () => {
       const startDateObj = new Date(start);
       const endDateObj = new Date(end);
       if (startDateObj > endDateObj) {
-        setError("到达时间不能晚于离开时间");
+        setError("到达时间不能晚于离开时间。");
         return false;
       }
     }
@@ -90,7 +93,7 @@ export const PlanPage: React.FC = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setLoading(false);
-      setError("已取消生成");
+      setError("已取消生成。");
     }
   };
 
@@ -99,7 +102,7 @@ export const PlanPage: React.FC = () => {
     const departureTime = departureDate ? `${departureDate}T${departureTimeStr}` : '';
 
     if (!destination || !arrivalDate || !departureDate || transport.length === 0) {
-      setError("请填写所有必填项（目的地、到达/离开日期、交通方式）");
+      setError("请填写所有必填项（目的地、日期、交通方式）。");
       return;
     }
 
@@ -140,7 +143,7 @@ export const PlanPage: React.FC = () => {
       if (err instanceof Error && err.name === 'AbortError') {
         return;
       }
-      setError(err instanceof Error ? err.message : "发生未知错误");
+      setError(err instanceof Error ? err.message : "发生未知错误。");
     } finally {
       if (!controller.signal.aborted) {
         setLoading(false);
@@ -149,299 +152,308 @@ export const PlanPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <header className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">智能旅行助手</h1>
-          <div className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
-            一键生成攻略
+    <div className="p-4 space-y-6 animate-reveal pb-24 max-w-2xl mx-auto">
+      <header className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-[var(--accent-light)] rounded-2xl flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-[var(--accent)]" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-[var(--text-base)]">
+              开启新旅程
+            </h1>
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Start New Journey</p>
           </div>
         </div>
-        <p className="text-slate-500 text-sm">秒级规划您的完美旅程</p>
       </header>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-semibold flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-slate-400" />
-            目的地 <span className="text-rose-500">*</span>
-          </label>
-          <div className="relative" ref={dropdownRef}>
-            <input
-              type="text"
-              disabled={loading}
-              placeholder="请选择此次旅行目的地"
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm disabled:bg-slate-50 disabled:text-slate-400"
-              value={showCityDropdown ? citySearch : destination}
-              onChange={(e) => {
-                setCitySearch(e.target.value);
-                setShowCityDropdown(true);
-              }}
-              onFocus={() => {
-                setCitySearch(destination);
-                setShowCityDropdown(true);
-              }}
-            />
-            {showCityDropdown && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                {filteredCities.length > 0 ? (
-                  filteredCities.map(group => (
-                    <div key={group.province}>
-                      <div className="px-3 py-1 bg-slate-50 text-xs font-bold text-slate-500 sticky top-0">
-                        {group.province}
+      <div className="space-y-5">
+        <div className="clean-card p-5 space-y-5">
+          <div className="space-y-2 relative">
+            <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+              <MapPin className="w-4 h-4 text-[var(--accent)]" />
+              目的地 <span className="text-[var(--accent)]">*</span>
+            </label>
+            <div className="relative" ref={dropdownRef}>
+              <input
+                type="text"
+                disabled={loading}
+                placeholder="去哪里？"
+                className="clean-input pl-12"
+                value={showCityDropdown ? citySearch : destination}
+                onChange={(e) => {
+                  setCitySearch(e.target.value);
+                  setShowCityDropdown(true);
+                }}
+                onFocus={() => {
+                  setCitySearch(destination);
+                  setShowCityDropdown(true);
+                }}
+              />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
+              
+              {showCityDropdown && (
+                <div className="absolute z-50 w-full mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl max-h-60 overflow-y-auto">
+                  {filteredCities.length > 0 ? (
+                    filteredCities.map(group => (
+                      <div key={group.province}>
+                        <div className="px-4 py-2 bg-[var(--bg-base)] text-[10px] font-bold text-[var(--text-muted)] sticky top-0 border-b border-[var(--border)] uppercase tracking-wider">
+                          {group.province}
+                        </div>
+                        {group.cities.map(city => {
+                          const fullCityName = `${group.province}-${city}`;
+                          return (
+                            <div
+                              key={fullCityName}
+                              className="px-5 py-3 hover:bg-[var(--accent-light)] cursor-pointer text-sm font-bold transition-colors border-b border-[var(--border)] last:border-0"
+                              onClick={() => {
+                                setDestination(fullCityName);
+                                setShowCityDropdown(false);
+                                setCitySearch('');
+                              }}
+                            >
+                              {city}
+                            </div>
+                          );
+                        })}
                       </div>
-                      {group.cities.map(city => {
-                        const fullCityName = `${group.province}-${city}`;
-                        return (
-                          <div
-                            key={fullCityName}
-                            className="p-3 hover:bg-slate-100 cursor-pointer text-sm pl-4"
-                            onClick={() => {
-                              setDestination(fullCityName);
-                              setShowCityDropdown(false);
-                              setCitySearch('');
-                            }}
-                          >
-                            {city}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-3 text-slate-400 text-sm text-center">未找到匹配的城市</div>
-                )}
+                    ))
+                  ) : (
+                    <div className="p-4 text-[var(--text-muted)] text-sm font-bold text-center">未找到匹配城市</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5">
+            <div className="space-y-2">
+              <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+                <Calendar className="w-4 h-4 text-[var(--accent)]" />
+                到达时间 <span className="text-[var(--accent)]">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <input 
+                  disabled={loading}
+                  type="date" 
+                  min={today.split('T')[0]}
+                  className="clean-input text-sm"
+                  value={arrivalDate}
+                  onChange={(e) => {
+                    setArrivalDate(e.target.value);
+                    const fullArrival = e.target.value ? `${e.target.value}T${arrivalTimeStr}` : '';
+                    const fullDeparture = departureDate ? `${departureDate}T${departureTimeStr}` : '';
+                    validateDates(fullArrival, fullDeparture);
+                  }}
+                />
+                <input 
+                  disabled={loading}
+                  type="time" 
+                  className="clean-input text-sm"
+                  value={arrivalTimeStr}
+                  onChange={(e) => {
+                    setArrivalTimeStr(e.target.value);
+                    const fullArrival = arrivalDate ? `${arrivalDate}T${e.target.value}` : '';
+                    const fullDeparture = departureDate ? `${departureDate}T${departureTimeStr}` : '';
+                    validateDates(fullArrival, fullDeparture);
+                  }}
+                />
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-3">
-            <label className="text-sm font-bold flex items-center gap-2 text-slate-700">
-              <Calendar className="w-4 h-4 text-emerald-500" />
-              到达目的地
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <input 
-                disabled={loading}
-                type="date" 
-                min={today.split('T')[0]}
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
-                value={arrivalDate}
-                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
-                onChange={(e) => {
-                  setArrivalDate(e.target.value);
-                  const fullArrival = e.target.value ? `${e.target.value}T${arrivalTimeStr}` : '';
-                  const fullDeparture = departureDate ? `${departureDate}T${departureTimeStr}` : '';
-                  validateDates(fullArrival, fullDeparture);
-                }}
-              />
-              <input 
-                disabled={loading}
-                type="time" 
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
-                value={arrivalTimeStr}
-                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
-                onChange={(e) => {
-                  setArrivalTimeStr(e.target.value);
-                  const fullArrival = arrivalDate ? `${arrivalDate}T${e.target.value}` : '';
-                  const fullDeparture = departureDate ? `${departureDate}T${departureTimeStr}` : '';
-                  validateDates(fullArrival, fullDeparture);
-                }}
-              />
             </div>
-          </div>
 
-          <div className="space-y-3">
-            <label className="text-sm font-bold flex items-center gap-2 text-slate-700">
-              <Calendar className="w-4 h-4 text-rose-500" />
-              离开目的地
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <input 
-                disabled={loading}
-                type="date" 
-                min={arrivalDate}
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
-                value={departureDate}
-                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
-                onChange={(e) => {
-                  setDepartureDate(e.target.value);
-                  const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
-                  const fullDeparture = e.target.value ? `${e.target.value}T${departureTimeStr}` : '';
-                  validateDates(fullArrival, fullDeparture);
-                }}
-              />
-              <input 
-                disabled={loading}
-                type="time" 
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-slate-800 outline-none bg-white text-sm cursor-pointer"
-                value={departureTimeStr}
-                onClick={(e) => 'showPicker' in e.target && (e.target as HTMLInputElement).showPicker()}
-                onChange={(e) => {
-                  setDepartureTimeStr(e.target.value);
-                  const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
-                  const fullDeparture = departureDate ? `${departureDate}T${e.target.value}` : '';
-                  validateDates(fullArrival, fullDeparture);
-                }}
-              />
+            <div className="space-y-2">
+              <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+                <Calendar className="w-4 h-4 text-[var(--accent)]" />
+                离开时间 <span className="text-[var(--accent)]">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <input 
+                  disabled={loading}
+                  type="date" 
+                  min={arrivalDate}
+                  className="clean-input text-sm"
+                  value={departureDate}
+                  onChange={(e) => {
+                    setDepartureDate(e.target.value);
+                    const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
+                    const fullDeparture = e.target.value ? `${e.target.value}T${departureTimeStr}` : '';
+                    validateDates(fullArrival, fullDeparture);
+                  }}
+                />
+                <input 
+                  disabled={loading}
+                  type="time" 
+                  className="clean-input text-sm"
+                  value={departureTimeStr}
+                  onChange={(e) => {
+                    setDepartureTimeStr(e.target.value);
+                    const fullArrival = arrivalDate ? `${arrivalDate}T${arrivalTimeStr}` : '';
+                    const fullDeparture = departureDate ? `${departureDate}T${e.target.value}` : '';
+                    validateDates(fullArrival, fullDeparture);
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-semibold flex items-center gap-2">
-            <Navigation className="w-4 h-4 text-slate-400" />
-            交通方式 <span className="text-rose-500">*</span>
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: 'public-taxi', label: '公共交通/打车', icon: Bus },
-              { id: 'rental', label: '租车', icon: Car },
-              { id: 'self-driving', label: '自驾', icon: Car },
-            ].map((mode) => (
-              <button
-                key={mode.id}
-                disabled={loading}
-                onClick={() => {
-                  setTransport(prev => 
-                    prev.includes(mode.id) 
-                      ? prev.filter(t => t !== mode.id)
-                      : [...prev, mode.id]
-                  );
-                }}
-                className={clsx(
-                  "flex flex-col items-center justify-center p-3 rounded-xl border transition-all gap-1",
-                  transport.includes(mode.id) 
-                    ? "bg-slate-800 border-slate-800 text-white shadow-md" 
-                    : "bg-white border-slate-200 text-slate-500 hover:border-slate-300",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
-                )}
-              >
-                <mode.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{mode.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-          <div className="text-sm font-bold flex items-center gap-2">
-            <Settings2 className="w-4 h-4 text-slate-400" />
-            住宿偏好
-          </div>
-          
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: 'hotel', label: '酒店' },
-              { id: 'homestay', label: '民宿' },
-              { id: 'car', label: '住在车里' },
-            ].map((type) => (
-              <button
-                key={type.id}
-                disabled={loading}
-                onClick={() => setAccommodationType(type.id as any)}
-                className={clsx(
-                  "py-2 px-1 rounded-xl border text-[10px] font-bold transition-all",
-                  accommodationType === type.id 
-                    ? "bg-white border-emerald-500 text-emerald-700 shadow-sm" 
-                    : "bg-transparent border-slate-200 text-slate-500"
-                )}
-              >
-                {type.label}
-              </button>
-            ))}
+        <div className="clean-card p-5 space-y-6">
+          <div className="space-y-3">
+            <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+              <Navigation className="w-4 h-4 text-[var(--accent)]" />
+              交通方式 <span className="text-[var(--accent)]">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { id: 'public-taxi', label: '公共交通', icon: Bus },
+                { id: 'rental', label: '租车', icon: Car },
+                { id: 'self-driving', label: '自驾', icon: Car },
+              ].map((mode) => (
+                <button
+                  key={mode.id}
+                  disabled={loading}
+                  onClick={() => {
+                    setTransport(prev => 
+                      prev.includes(mode.id) 
+                        ? prev.filter(t => t !== mode.id)
+                        : [...prev, mode.id]
+                    );
+                  }}
+                  className={clsx(
+                    "flex flex-col items-center justify-center p-4 rounded-2xl transition-all gap-2 font-bold text-xs border",
+                    transport.includes(mode.id) 
+                      ? "bg-[var(--accent)] border-[var(--accent)] text-white" 
+                      : "bg-[var(--bg-base)] border-[var(--border)] text-[var(--text-muted)]",
+                    "disabled:opacity-50"
+                  )}
+                >
+                  <mode.icon className="w-5 h-5" />
+                  <span>{mode.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              价格预算 (RMB)
+          <div className="space-y-3">
+            <div className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+              <Settings2 className="w-4 h-4 text-[var(--accent)]" />
+              住宿偏好
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { id: 'hotel', label: '酒店' },
+                { id: 'homestay', label: '民宿' },
+                { id: 'car', label: '房车/露营' },
+              ].map((type) => (
+                <button
+                  key={type.id}
+                  disabled={loading}
+                  onClick={() => setAccommodationType(type.id as any)}
+                  className={clsx(
+                    "py-3 px-2 text-xs font-bold rounded-xl transition-all border",
+                    accommodationType === type.id 
+                      ? "bg-[var(--accent)] text-white border-[var(--accent)]" 
+                      : "bg-transparent text-[var(--text-muted)] border-[var(--border)]"
+                  )}
+                >
+                  {type.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <label className="text-[10px] font-bold text-[var(--text-muted)] ml-1 uppercase tracking-widest">
+              预算限制 (可选)
             </label>
             <input 
               disabled={loading}
               type="number"
               placeholder="例如：500"
-              className="w-full p-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+              className="clean-input"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-semibold flex items-center gap-2">
-            <Utensils className="w-4 h-4 text-slate-400" />
-            饮食偏好
-          </label>
-          <textarea 
-            disabled={loading}
-            placeholder="例如：火锅、川菜、素食..."
-            className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none min-h-[60px] disabled:bg-slate-50 disabled:text-slate-400"
-            value={foodPrefs}
-            onChange={(e) => setFoodPrefs(e.target.value)}
-          />
+        <div className="clean-card p-5 space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+              <Utensils className="w-4 h-4 text-[var(--accent)]" />
+              饮食偏好
+            </label>
+            <textarea 
+              disabled={loading}
+              placeholder="例如：素食、当地小吃..."
+              className="clean-input min-h-[100px] resize-none"
+              value={foodPrefs}
+              onChange={(e) => setFoodPrefs(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+              <Camera className="w-4 h-4 text-[var(--accent)]" />
+              必去景点
+            </label>
+            <textarea 
+              disabled={loading}
+              placeholder="例如：博物馆、公园..."
+              className="clean-input min-h-[100px] resize-none"
+              value={sightseeingPrefs}
+              onChange={(e) => setSightseeingPrefs(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-semibold flex items-center gap-2">
-            <Camera className="w-4 h-4 text-slate-400" />
-            必去景点
-          </label>
-          <textarea 
-            disabled={loading}
-            placeholder="例如：故宫、长城、西湖..."
-            className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none min-h-[60px] disabled:bg-slate-50 disabled:text-slate-400"
-            value={sightseeingPrefs}
-            onChange={(e) => setSightseeingPrefs(e.target.value)}
-          />
-        </div>
 
-        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+        <div className="flex items-center justify-between p-4 clean-card">
           <div className="space-y-1">
-            <div className="text-sm font-semibold">旅行节奏</div>
-            <div className="text-[10px] text-slate-500">
-              {pace === 'low' ? '10:00出发, 21:00回酒店' : 
-               pace === 'high' ? '08:00出发, 22:00回酒店' : 
-               '适中的行程安排'}
+            <div className="text-sm font-extrabold text-[var(--text-base)]">行程节奏</div>
+            <div className="text-[12px] text-[var(--text-muted)] uppercase tracking-wider">
+              {pace === 'low' ? '轻松 (10:00 - 21:00)' : 
+               pace === 'high' ? '紧凑 (08:00 - 22:00)' : 
+               '适中 (常规作息)'}
             </div>
           </div>
           <select 
             disabled={loading}
-            className="bg-white border border-slate-200 rounded-lg p-2 text-sm outline-none disabled:opacity-50"
+            className="bg-[var(--surface)] border border-[var(--border)] text-[var(--text-base)] font-bold rounded-xl p-2 text-sm outline-none"
             value={pace}
             onChange={(e) => setPace(e.target.value)}
           >
-            <option value="low">悠闲</option>
+            <option value="low">轻松</option>
             <option value="medium">适中</option>
             <option value="high">紧凑</option>
           </select>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+        <div className="flex items-center justify-between p-4 clean-card">
           <div className="space-y-1">
-            <div className="text-sm font-semibold">灵活生成</div>
-            <div className="text-[10px] text-slate-500">
-              开启后 AI 将根据您的偏好自动优化行程，增减内容以确保行程更合理
+            <div className="text-sm font-extrabold text-[var(--text-base)]">灵活模式</div>
+            <div className="text-[12px] text-[var(--text-muted)] uppercase tracking-wider">
+              AI 自动优化行程
             </div>
           </div>
           <button 
             onClick={() => setFlexible(!flexible)}
             className={clsx(
-              "w-12 h-6 rounded-full transition-all relative flex-shrink-0",
-              flexible ? "bg-emerald-500" : "bg-slate-300"
+              "w-12 h-6 rounded-full transition-all relative flex-shrink-0 border border-[var(--border)]",
+              flexible ? "bg-[var(--accent)] border-[var(--accent)]" : "bg-[var(--border)]"
             )}
           >
             <div className={clsx(
-              "absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm",
-              flexible ? "left-7" : "left-1"
+              "absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all",
+              flexible ? "left-6" : "left-1"
             )} />
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 text-rose-600 text-sm rounded-xl border border-rose-100">
+        <div className="p-4 bg-red-50 text-red-500 rounded-2xl font-bold text-xs border border-red-100">
           {error}
         </div>
       )}
@@ -449,17 +461,17 @@ export const PlanPage: React.FC = () => {
       <button
         disabled={loading}
         onClick={handleGenerate}
-        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors disabled:opacity-50"
+        className="clean-btn-primary h-16 text-lg mt-4 rounded-full"
       >
         {loading ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            正在为您规划行程...
+            <Loader2 className="w-6 h-6 animate-spin" />
+            生成中...
           </>
         ) : (
           <>
-            生成旅行攻略
-            <ArrowRight className="w-5 h-5" />
+            <Zap className="w-6 h-6" />
+            生成行程
           </>
         )}
       </button>
@@ -467,11 +479,12 @@ export const PlanPage: React.FC = () => {
       {loading && (
         <button
           onClick={handleCancel}
-          className="w-full py-3 bg-white text-rose-500 border border-rose-200 rounded-2xl font-semibold text-sm hover:bg-rose-50 transition-colors"
+          className="clean-btn-secondary h-14 text-sm mt-2 !text-red-500 !border-red-200 hover:!bg-red-50"
         >
-          取消生成
+          取消
         </button>
       )}
     </div>
   );
 };
+

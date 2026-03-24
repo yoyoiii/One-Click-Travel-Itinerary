@@ -1,1 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+@layer base {
+  :root {
+    --bg-base: #F8FAFC;
+    --text-base: #334155;
+    --text-muted: #94A3B8;
+    --accent: #34D399;
+    --accent-light: #D1FAE5;
+    --surface: #FFFFFF;
+    --border: #F1F5F9;
+    --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  }
+
+  body {
+    @apply bg-[var(--bg-base)] text-[var(--text-base)] antialiased;
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+}
+
+@utility glass-panel {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+@utility clean-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+@utility clean-input {
+  @apply w-full px-4 py-3 outline-none transition-all;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  color: var(--text-base);
+  font-family: var(--font-sans);
+
+  &:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+}
+
+@utility clean-btn-primary {
+  @apply w-full px-5 py-3.5 font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  background: var(--accent);
+  color: #FFFFFF;
+  border-radius: 1.25rem;
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+@utility clean-btn-secondary {
+  @apply w-full px-5 py-3.5 font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  background: var(--surface);
+  color: var(--text-base);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+    background: var(--bg-base);
+  }
+}
+
+/* Animations */
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-reveal {
+  animation: floatUp 0.4s ease-out forwards;
+}
