@@ -295,9 +295,7 @@ export const PlanPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="clean-card p-5 space-y-6">
           <div className="space-y-3">
             <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
               <Navigation className="w-4 h-4 text-[var(--accent)]" />
@@ -333,7 +331,9 @@ export const PlanPage: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
 
+        <div className="clean-card p-5">
           <div className="space-y-3">
             <div className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
               <Settings2 className="w-4 h-4 text-[var(--accent)]" />
@@ -362,9 +362,8 @@ export const PlanPage: React.FC = () => {
               ))}
             </div>
           </div>
-
-          <div className="space-y-2 pt-2">
-            <label className="text-[10px] font-bold text-[var(--text-muted)] ml-1 uppercase tracking-widest">
+          <div className="space-y-3 pt-2">
+            <label className="text-[11px] font-bold text-[var(--text-muted)] ml-1 uppercase tracking-widest">
               预算限制 (可选)
             </label>
             <input 

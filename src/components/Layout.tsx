@@ -28,7 +28,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               to="/"
               className={({ isActive }) => clsx(
                 "flex flex-col items-center gap-1.5 p-2.5 transition-all w-24 rounded-2xl",
-                isActive ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)] hover:bg-[var(--bg-base)]"
+                isActive ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
               )}
             >
               <Search className="w-5 h-5" />
@@ -38,7 +38,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               to="/collection"
               className={({ isActive }) => clsx(
                 "flex flex-col items-center gap-1.5 p-2.5 transition-all w-24 rounded-2xl",
-                isActive ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)] hover:bg-[var(--bg-base)]"
+                isActive ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
               )}
             >
               <MapPin className="w-5 h-5" />
@@ -48,7 +48,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               to="/profile"
               className={({ isActive }) => clsx(
                 "flex flex-col items-center gap-1.5 p-2.5 transition-all w-24 rounded-2xl",
-                isActive ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)] hover:bg-[var(--bg-base)]"
+                isActive ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
               )}
             >
               <UserIcon className="w-5 h-5" />

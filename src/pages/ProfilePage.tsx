@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, LogOut, ChevronRight, Edit2, Check, X, Moon, Sun } from 'lucide-react';
 import { motion } from 'motion/react';
+import { clsx } from 'clsx';
 import { useTheme } from '../context/ThemeContext';
 
 export const ProfilePage: React.FC = () => {
@@ -49,29 +50,40 @@ export const ProfilePage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between group bg-white p-5 rounded-2xl clean-card border border-[var(--border)]">
           {isEditing ? (
-            <div className="flex items-center gap-3 w-full">
-              <input
-                type="text"
-                value={newUsername}
-                onChange={(e) => setNewUsername(e.target.value)}
-                className="clean-input flex-1 text-base font-black"
-                autoFocus
-              />
-              <button 
-                onClick={handleUpdateUsername}
-                className="p-3 bg-[var(--accent)] text-white rounded-xl hover:bg-[var(--accent)]/90 transition-all border border-[var(--accent)]"
-              >
-                <Check className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => {
-                  setIsEditing(false);
-                  setNewUsername(user.displayName || '');
-                }}
-                className="p-3 bg-[var(--bg-base)] text-[var(--text-base)] rounded-xl hover:bg-[var(--border)] transition-all border border-[var(--border)]"
-              >
-                <X className="w-5 h-5" />
-              </button>
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  maxLength={16}
+                  className="clean-input flex-1 text-base font-black"
+                  autoFocus
+                />
+                <button 
+                  onClick={handleUpdateUsername}
+                  className="p-3 bg-[var(--accent)] text-white rounded-xl hover:bg-[var(--accent)]/90 transition-all border border-[var(--accent)]"
+                >
+                  <Check className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={() => {
+                    setIsEditing(false);
+                    setNewUsername(user.displayName || '');
+                  }}
+                  className="p-3 bg-[var(--bg-base)] text-[var(--text-base)] rounded-xl hover:bg-[var(--border)] transition-all border border-[var(--border)]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex justify-end px-1">
+                <span className={clsx(
+                  "text-[10px] font-bold",
+                  newUsername.length >= 16 ? "text-red-500" : "text-[var(--text-muted)]"
+                )}>
+                  {newUsername.length} / 16
+                </span>
+              </div>
             </div>
           ) : (
             <>

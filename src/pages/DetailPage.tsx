@@ -135,10 +135,12 @@ export const DetailPage: React.FC = () => {
       <div className="flex-1 p-4 space-y-4">
         {/* Pace Warning */}
         {currentItinerary.paceWarning && (
-          <div className="p-3 bg-orange-50 border border-orange-100 rounded-xl flex gap-2.5 items-start">
-            <Info className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-orange-800 leading-relaxed font-bold">
-              <span className="font-extrabold uppercase tracking-wider block mb-0.5">温馨提示</span>
+          <div className="p-3 bg-orange-50 border border-orange-100 rounded-xl gap-2.5">
+            <div className="flex items-center flex-start gap-2">
+              <span className="font-extrabold uppercase tracking-wider block mb-0.5 text-xs text-orange-800">温馨提示</span>
+              <Info className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+            </div>
+            <div className="text-xs text-orange-800 leading-relaxed">
               {currentItinerary.paceWarning}
             </div>
           </div>
@@ -153,7 +155,7 @@ export const DetailPage: React.FC = () => {
               </div>
               <div>
                 <div className="text-lg font-black text-[var(--text-base)] tracking-tight">{activeDay.weather.temp}</div>
-                <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{activeDay.weather.condition} • {activeDay.weather.description}</div>
+                <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest">{activeDay.weather.condition} • {activeDay.weather.description}</div>
               </div>
             </div>
           </div>
@@ -168,7 +170,7 @@ export const DetailPage: React.FC = () => {
               className={clsx(
                 "px-5 py-2.5 text-xs font-black whitespace-nowrap transition-all rounded-full border-1",
                 activeDayIdx === idx 
-                  ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-md shadow-emerald-100" 
+                  ? "bg-[var(--accent)] text-white border-[var(--accent)]" 
                   : "bg-white text-[var(--text-muted)] border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
               )}
             >
@@ -182,8 +184,8 @@ export const DetailPage: React.FC = () => {
               className={clsx(
                 "px-5 py-2.5 text-xs font-black whitespace-nowrap transition-all rounded-full border-1",
                 activeDayIdx === currentItinerary.days.length 
-                  ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-md shadow-emerald-100" 
-                  : "bg-white text-[var(--text-muted)] border-[var(--border)] hover:border-[var(--text-base)] hover:text-[var(--accent)]"
+                  ? "bg-[var(--accent)] text-white border-[var(--accent)]" 
+                  : "bg-white text-[var(--text-muted)] border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
               )}
             >
               特色推荐
@@ -242,7 +244,7 @@ export const DetailPage: React.FC = () => {
                     {activeDay.restaurants.map((rest, idx) => (
                       <div key={idx} className="p-4 clean-card bg-white relative overflow-hidden group">
                         {rest.mealType && (
-                          <div className="absolute top-0 right-0 bg-orange-100 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-bl-xl uppercase tracking-wider">
+                          <div className="absolute top-0 right-0 bg-orange-100 text-orange-600 text-[10px] font-black px-2 py-0.5 rounded-bl-xl uppercase tracking-wider">
                             {rest.mealType}
                           </div>
                         )}
@@ -252,12 +254,12 @@ export const DetailPage: React.FC = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <div className="flex items-center gap-1 text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-100">
                             <Star className="w-2.5 h-2.5 fill-current" />
-                            <span className="text-[9px] font-black">{rest.rating}</span>
+                            <span className="text-[10px] font-black">{rest.rating}</span>
                           </div>
-                          <div className="text-[9px] text-[var(--text-muted)] font-bold uppercase tracking-wider">{rest.cuisine} • {rest.reviews} 条评价</div>
+                          <div className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">{rest.cuisine} • {rest.reviews} 条评价</div>
                         </div>
-                        <p className="text-[11px] text-[var(--text-muted)] mb-3 leading-relaxed">{rest.description}</p>
-                        <div className="flex items-center gap-1.5 text-[9px] text-[var(--text-muted)] bg-[var(--bg-base)] p-2 rounded-lg border border-[var(--border)]">
+                        <p className="text-[12px] text-[var(--text-muted)] mb-3 leading-relaxed">{rest.description}</p>
+                        <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] bg-[var(--bg-base)] p-2 rounded-lg border border-[var(--border)]">
                           <MapPin className="w-3 h-3 flex-shrink-0 text-[var(--accent)]" />
                           <span className="truncate">{rest.address}</span>
                         </div>
@@ -275,12 +277,12 @@ export const DetailPage: React.FC = () => {
                     <div className="p-4 clean-card bg-white">
                       <div className="flex justify-between items-start mb-2">
                         <div className="font-black text-sm text-[var(--text-base)]">{activeDay.accommodation.name}</div>
-                        <div className="text-[9px] font-black text-[var(--accent)] bg-[var(--accent-light)] px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                        <div className="text-[10px] font-black text-[var(--accent)] bg-[var(--accent-light)] px-1.5 py-0.5 rounded-md uppercase tracking-wider">
                           {activeDay.accommodation.type}
                         </div>
                       </div>
-                      <p className="text-[11px] text-[var(--text-muted)] mb-3 leading-relaxed">{activeDay.accommodation.description}</p>
-                      <div className="flex items-center gap-1.5 text-[9px] text-[var(--text-muted)] font-bold bg-[var(--bg-base)] p-2 rounded-lg border border-[var(--border)]">
+                      <p className="text-[12px] text-[var(--text-muted)] mb-3 leading-relaxed">{activeDay.accommodation.description}</p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] bg-[var(--bg-base)] p-2 rounded-lg border border-[var(--border)]">
                         <MapPin className="w-3 h-3 flex-shrink-0 text-[var(--accent)]" />
                         <span className="truncate">{activeDay.accommodation.address}</span>
                       </div>
