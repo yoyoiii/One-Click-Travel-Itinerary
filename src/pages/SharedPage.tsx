@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { 
-  ChevronRight, 
   Loader2, 
   Star, 
   Info, 
@@ -10,170 +9,86 @@ import {
   Utensils,
   Camera,
   Car,
-  Bus,
   MapPin,
   Coffee,
-  Croissant,
-  Share2
+  Croissant
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx } from 'clsx';
-import { useTravel } from '../context/TravelContext';
-import { Modal } from '../components/Modals';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { TravelItinerary } from '../types';
 
-export const DetailPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { currentItinerary, setCurrentItinerary, savedItineraries, saveItinerary } = useTravel();
-  
+export const SharedPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [itinerary, setItinerary] = useState<TravelItinerary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeDayIdx, setActiveDayIdx] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
-  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
-  const [showSaveNamePrompt, setShowSaveNamePrompt] = useState(false);
-  const [itineraryName, setItineraryName] = useState('');
 
   useEffect(() => {
-    if (!currentItinerary) {
-      navigate('/');
-    }
-  }, [currentItinerary, navigate]);
-
-  if (!currentItinerary) return null;
-
-  const activeDay = currentItinerary.days[activeDayIdx];
-
-  const handleBack = () => {
-    if (currentItinerary && !currentItinerary.id) {
-      setShowSaveConfirm(true);
-    } else {
-      navigate(-1);
-    }
-  };
-
-  const navigateItinerary = (direction: 'prev' | 'next') => {
-    const currentIndex = savedItineraries.findIndex(i => i.id === currentItinerary.id);
-    if (currentIndex === -1) return;
-
-    let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-    if (nextIndex >= 0 && nextIndex < savedItineraries.length) {
-      setCurrentItinerary(savedItineraries[nextIndex]);
-      setActiveDayIdx(0);
-    }
-  };
-
-  const handleSaveClick = () => {
-    setItineraryName(`${currentItinerary.destination} 行程 (${(currentItinerary.arrivalTime || (currentItinerary as any).startDate || '').split('T')[0]})`);
-    setShowSaveNamePrompt(true);
-  };
-
-  const confirmSave = async (shouldSave: boolean) => {
-    if (shouldSave) {
-      handleSaveClick();
-    } else {
-      navigate('/');
-    }
-    setShowSaveConfirm(false);
-  };
-
-  const handleFinalSave = async () => {
-    setIsSaving(true);
-    const saved = await saveItinerary(currentItinerary, itineraryName);
-    setIsSaving(false);
-    setShowSaveNamePrompt(false);
-    if (saved) {
-      setCurrentItinerary(saved);
-      navigate('/collection');
-    }
-  };
-
-  const handleShare = async () => {
-    if (!currentItinerary?.id) return;
-    const shareUrl = `${window.location.origin}/shared/${currentItinerary.id}`;
-    
-    if (navigator.share) {
+    const fetchItinerary = async () => {
+      if (!id) return;
       try {
-        await navigator.share({
-          title: currentItinerary.name || `${currentItinerary.destination} 行程`,
-          text: '来看看我的旅行行程！',
-          url: shareUrl,
-        });
+        const docRef = doc(db, 'itineraries', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setItinerary({ ...docSnap.data(), id: docSnap.id } as TravelItinerary);
+        } else {
+          setError('找不到该行程');
+        }
       } catch (err) {
-        console.error('Share failed:', err);
+        console.error("Error fetching itinerary:", err);
+        setError('加载行程失败');
+      } finally {
+        setLoading(false);
       }
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert('分享链接已复制到剪贴板，快去微信分享吧！');
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
-    }
-  };
+    };
+
+    fetchItinerary();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)]">
+        <Loader2 className="w-12 h-12 animate-spin text-[var(--accent)]" />
+      </div>
+    );
+  }
+
+  if (error || !itinerary) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)]">
+        <div className="text-center">
+          <p className="text-[var(--text-muted)] mb-4">{error || '找不到该行程'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const activeDay = itinerary.days[activeDayIdx];
 
   return (
     <div className="flex flex-col min-h-full bg-[var(--bg-base)] pb-24">
-      {/* Top Navigation Bar */}
-      <div className="p-4 bg-white/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-30 border-b border-[var(--border)]">
-        <button 
-          onClick={handleBack}
-          className="p-2 -ml-2 text-[var(--text-base)] hover:bg-[var(--surface)] transition-colors flex items-center gap-1 text-sm font-bold rounded-xl"
-        >
-          <ChevronRight className="w-5 h-5 rotate-180" />
-          返回
-        </button>
-        <h2 className="text-lg font-bold text-[var(--text-base)] truncate max-w-[150px]">{currentItinerary.name || `${currentItinerary.destination} 行程`}</h2>
-        <div className="flex items-center gap-2">
-          {currentItinerary.id ? (
-            <div className="flex items-center gap-1">
-              <button 
-                onClick={handleShare}
-                className="p-2 bg-[var(--surface)] text-[var(--accent)] hover:bg-[var(--accent-light)] transition-all rounded-xl"
-                title="分享到微信"
-              >
-                <Share2 className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => navigateItinerary('prev')}
-                disabled={savedItineraries.findIndex(i => i.id === currentItinerary.id) <= 0}
-                className="p-2 bg-[var(--surface)] text-[var(--text-base)] disabled:opacity-30 hover:bg-[var(--accent-light)] hover:text-[var(--accent)] transition-all rounded-xl"
-              >
-                <ChevronRight className="w-5 h-5 rotate-180" />
-              </button>
-              <button 
-                onClick={() => navigateItinerary('next')}
-                disabled={savedItineraries.findIndex(i => i.id === currentItinerary.id) >= savedItineraries.length - 1}
-                className="p-2 bg-[var(--surface)] text-[var(--text-base)] disabled:opacity-30 hover:bg-[var(--accent-light)] hover:text-[var(--accent)] transition-all rounded-xl"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={handleSaveClick}
-              disabled={isSaving}
-              className="px-4 py-2 bg-[var(--accent)] text-white rounded-xl transition-all text-sm font-bold flex items-center gap-2 disabled:opacity-50 hover:bg-[var(--accent)]/90"
-            >
-              {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Star className="w-4 h-4 fill-current" />
-              )}
-              {isSaving ? '保存中...' : '保存'}
-            </button>
-          )}
-        </div>
+      {/* Top Navigation Bar - Simplified for Shared View */}
+      <div className="p-4 bg-white/80 backdrop-blur-md flex items-center justify-center sticky top-0 z-30 border-b border-[var(--border)]">
+        <h2 className="text-lg font-bold text-[var(--text-base)] truncate max-w-[250px]">
+          {itinerary.name || `${itinerary.destination} 行程`}
+        </h2>
       </div>
 
       {/* Itinerary Details */}
       <div className="flex-1 p-4 space-y-4 animate-reveal">
         {/* Pace Warning */}
-        {currentItinerary.paceWarning && (
+        {itinerary.paceWarning && (
           <div className="p-3 bg-orange-50 border border-orange-100 rounded-xl gap-2.5">
             <div className="flex items-center flex-start gap-2">
               <span className="font-extrabold uppercase tracking-wider block mb-0.5 text-xs text-orange-800">温馨提示</span>
               <Info className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
             </div>
             <div className="text-xs text-orange-800 leading-relaxed">
-              {currentItinerary.paceWarning}
+              {itinerary.paceWarning}
             </div>
           </div>
         )}
@@ -195,7 +110,7 @@ export const DetailPage: React.FC = () => {
 
         {/* Day Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {currentItinerary.days.map((day, idx) => (
+          {itinerary.days.map((day, idx) => (
             <button
               key={day.day}
               onClick={() => setActiveDayIdx(idx)}
@@ -209,13 +124,13 @@ export const DetailPage: React.FC = () => {
               第 {day.day} 天
             </button>
           ))}
-          {((currentItinerary.cafesAndTea && currentItinerary.cafesAndTea.length > 0) || 
-            (currentItinerary.bakeriesAndDesserts && currentItinerary.bakeriesAndDesserts.length > 0)) && (
+          {((itinerary.cafesAndTea && itinerary.cafesAndTea.length > 0) || 
+            (itinerary.bakeriesAndDesserts && itinerary.bakeriesAndDesserts.length > 0)) && (
             <button
-              onClick={() => setActiveDayIdx(currentItinerary.days.length)}
+              onClick={() => setActiveDayIdx(itinerary.days.length)}
               className={clsx(
                 "px-5 py-2.5 text-xs font-black whitespace-nowrap transition-all rounded-full border-1",
-                activeDayIdx === currentItinerary.days.length 
+                activeDayIdx === itinerary.days.length 
                   ? "bg-[var(--accent)] text-white border-[var(--accent)]" 
                   : "bg-white text-[var(--text-muted)] border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
               )}
@@ -233,7 +148,7 @@ export const DetailPage: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4"
           >
-            {activeDayIdx < currentItinerary.days.length && activeDay && (
+            {activeDayIdx < itinerary.days.length && activeDay && (
               <>
                 <div className="clean-card p-4 bg-white">
                   <div className="flex items-center gap-1.5 text-[var(--accent)] font-black text-[14px] mb-2 uppercase tracking-widest">
@@ -325,7 +240,7 @@ export const DetailPage: React.FC = () => {
             )}
 
 
-            {activeDayIdx === currentItinerary.days.length && (
+            {activeDayIdx === itinerary.days.length && (
               <>
                 <div className="clean-card p-4 mb-5 bg-white">
                   <div className="flex items-center gap-1.5 text-[var(--accent)] font-bold text-xs mb-1.5">
@@ -337,14 +252,14 @@ export const DetailPage: React.FC = () => {
                   </p>
                 </div>
 
-                {currentItinerary.cafesAndTea && currentItinerary.cafesAndTea.length > 0 && (
+                {itinerary.cafesAndTea && itinerary.cafesAndTea.length > 0 && (
                   <div className="space-y-3.5 mb-6">
                     <h3 className="font-bold text-lg text-[var(--text-base)] flex items-center gap-1.5">
                       <Coffee className="w-4 h-4 text-[var(--accent)]" />
                       咖啡与茶饮
                     </h3>
                     <div className="grid gap-3">
-                      {currentItinerary.cafesAndTea.map((shop, idx) => (
+                      {itinerary.cafesAndTea.map((shop, idx) => (
                         <div key={idx} className="p-4 clean-card bg-white">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-bold text-base text-[var(--text-base)]">{shop.name}</div>
@@ -368,14 +283,14 @@ export const DetailPage: React.FC = () => {
                   </div>
                 )}
 
-                {currentItinerary.bakeriesAndDesserts && currentItinerary.bakeriesAndDesserts.length > 0 && (
+                {itinerary.bakeriesAndDesserts && itinerary.bakeriesAndDesserts.length > 0 && (
                   <div className="space-y-3.5">
                     <h3 className="font-bold text-lg text-[var(--text-base)] flex items-center gap-1.5">
                       <Croissant className="w-4 h-4 text-[var(--accent)]" />
                       烘焙与甜点
                     </h3>
                     <div className="grid gap-3">
-                      {currentItinerary.bakeriesAndDesserts.map((shop, idx) => (
+                      {itinerary.bakeriesAndDesserts.map((shop, idx) => (
                         <div key={idx} className="p-4 clean-card bg-white">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-bold text-base text-[var(--text-base)]">{shop.name}</div>
@@ -403,38 +318,6 @@ export const DetailPage: React.FC = () => {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      {/* Modals */}
-      <Modal 
-        isOpen={showSaveConfirm}
-        onClose={() => confirmSave(false)}
-        onConfirm={() => confirmSave(true)}
-        title="保存行程？"
-        description="在离开前，您想将此行程保存到收藏夹吗？"
-        confirmText="保存并离开"
-        cancelText="直接离开"
-        confirmColor="bg-[var(--accent)] text-white"
-      />
-
-      <Modal 
-        isOpen={showSaveNamePrompt}
-        onClose={() => setShowSaveNamePrompt(false)}
-        onConfirm={handleFinalSave}
-        title="行程名称"
-        description="给您的旅行计划起个好记的名字吧。"
-        confirmText="保存"
-        confirmColor="bg-[var(--accent)] text-white"
-        isLoading={isSaving}
-      >
-        <input 
-          type="text"
-          className="clean-input"
-          placeholder="输入行程名称"
-          value={itineraryName}
-          onChange={(e) => setItineraryName(e.target.value)}
-          disabled={isSaving}
-        />
-      </Modal>
     </div>
   );
 };

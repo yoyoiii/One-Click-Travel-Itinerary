@@ -12,12 +12,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  const isDetailPage = location.pathname === '/detail';
+  const isDetailPage = location.pathname === '/detail' || location.pathname.startsWith('/shared');
 
   return (
-    <div className="min-h-screen relative bg-[var(--bg-base)]">
-      <div className="max-w-md mx-auto min-h-screen relative flex flex-col bg-[var(--bg-base)]">
-        <main className={clsx("flex-1 overflow-y-auto", !isDetailPage && "pb-24")}>
+    <div className="h-screen overflow-hidden relative bg-[var(--bg-base)]">
+      <div className="max-w-md mx-auto h-full relative flex flex-col bg-[var(--bg-base)]">
+        <main className={clsx("flex-1 overflow-y-auto scrollbar-hide", !isDetailPage && "pb-24")}>
           {children}
         </main>
 

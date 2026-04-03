@@ -193,7 +193,7 @@ export const PlanPage: React.FC = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
               
               {showCityDropdown && (
-                <div className="absolute z-50 w-full mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl max-h-60 overflow-y-auto scrollbar-hide">
                   {filteredCities.length > 0 ? (
                     filteredCities.map(group => (
                       <div key={group.province}>

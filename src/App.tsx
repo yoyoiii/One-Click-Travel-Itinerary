@@ -10,6 +10,7 @@ import { DetailPage } from './pages/DetailPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { SharedPage } from './pages/SharedPage';
 import { Loader2 } from 'lucide-react';
 
 const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -40,6 +41,7 @@ export default function App() {
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/shared/:id" element={<SharedPage />} />
                 
                 <Route path="/" element={
                   <AuthGuard>

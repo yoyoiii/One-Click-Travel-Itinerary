@@ -114,7 +114,8 @@ service cloud.firestore {
     }
 
     match /itineraries/{itineraryId} {
-      allow read: if isDocOwner();
+      allow get: if true;
+      allow list: if isDocOwner();
       allow create: if isAuthenticated() && 
                     request.resource.data.userId == request.auth.uid &&
                     isValidItinerary(request.resource.data);
