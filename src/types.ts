@@ -22,6 +22,7 @@ export interface Activity {
   location: string;
   description: string;
   type: 'sightseeing' | 'transport' | 'food' | 'rest';
+  cost?: string;
   coordinates?: { lat: number; lng: number };
 }
 
@@ -47,6 +48,22 @@ export interface ShopRecommendation {
   description: string;
   address?: string;
   rating?: number;
+}
+
+export interface PlanFormState {
+  destination: string;
+  arrivalDate: string;
+  arrivalTimeStr: string;
+  departureDate: string;
+  departureTimeStr: string;
+  transport: string[];
+  foodPrefs: string;
+  sightseeingPrefs: string;
+  avoidSpots: string;
+  accommodationType: 'hotel' | 'homestay' | 'car';
+  budget: string;
+  pace: string;
+  flexible: boolean;
 }
 
 export interface TravelItinerary {

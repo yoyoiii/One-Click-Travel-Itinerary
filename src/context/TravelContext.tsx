@@ -14,7 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from './AuthContext';
-import { TravelItinerary } from '../types';
+import { TravelItinerary, PlanFormState } from '../types';
 
 enum OperationType {
   CREATE = 'create',
@@ -32,6 +32,8 @@ interface TravelContextType {
   deleteItinerary: (id: string) => Promise<void>;
   currentItinerary: TravelItinerary | null;
   setCurrentItinerary: (itinerary: TravelItinerary | null) => void;
+  draftParams: PlanFormState | null;
+  setDraftParams: (params: PlanFormState | null) => void;
 }
 
 const TravelContext = createContext<TravelContextType | undefined>(undefined);
@@ -40,6 +42,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const { user } = useAuth();
   const [savedItineraries, setSavedItineraries] = useState<TravelItinerary[]>([]);
   const [currentItinerary, setCurrentItinerary] = useState<TravelItinerary | null>(null);
+  const [draftParams, setDraftParams] = useState<PlanFormState | null>(null);
 
   const handleFirestoreError = (error: unknown, operationType: OperationType, path: string | null) => {
     const errInfo = {
@@ -144,7 +147,9 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       saveItinerary, 
       deleteItinerary,
       currentItinerary,
-      setCurrentItinerary
+      setCurrentItinerary,
+      draftParams,
+      setDraftParams
     }}>
       {children}
     </TravelContext.Provider>

@@ -23,9 +23,9 @@ import { chineseCities, allCities } from '../data/cities';
 
 export const PlanPage: React.FC = () => {
   const navigate = useNavigate();
-  const { setCurrentItinerary } = useTravel();
+  const { setCurrentItinerary, draftParams, setDraftParams } = useTravel();
 
-  const [destination, setDestination] = useState('');
+  const [destination, setDestination] = useState(draftParams?.destination || '');
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [citySearch, setCitySearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -57,18 +57,19 @@ export const PlanPage: React.FC = () => {
   }, []);
   
   // Split arrival and departure into date and time
-  const [arrivalDate, setArrivalDate] = useState('');
-  const [arrivalTimeStr, setArrivalTimeStr] = useState('10:00');
-  const [departureDate, setDepartureDate] = useState('');
-  const [departureTimeStr, setDepartureTimeStr] = useState('18:00');
+  const [arrivalDate, setArrivalDate] = useState(draftParams?.arrivalDate || '');
+  const [arrivalTimeStr, setArrivalTimeStr] = useState(draftParams?.arrivalTimeStr || '10:00');
+  const [departureDate, setDepartureDate] = useState(draftParams?.departureDate || '');
+  const [departureTimeStr, setDepartureTimeStr] = useState(draftParams?.departureTimeStr || '18:00');
 
-  const [transport, setTransport] = useState<string[]>([]);
-  const [foodPrefs, setFoodPrefs] = useState('');
-  const [sightseeingPrefs, setSightseeingPrefs] = useState('');
-  const [accommodationType, setAccommodationType] = useState<'hotel' | 'homestay' | 'car'>('hotel');
-  const [budget, setBudget] = useState<string>('');
-  const [pace, setPace] = useState('medium');
-  const [flexible, setFlexible] = useState(true);
+  const [transport, setTransport] = useState<string[]>(draftParams?.transport || []);
+  const [foodPrefs, setFoodPrefs] = useState(draftParams?.foodPrefs || '');
+  const [sightseeingPrefs, setSightseeingPrefs] = useState(draftParams?.sightseeingPrefs || '');
+  const [avoidSpots, setAvoidSpots] = useState(draftParams?.avoidSpots || '');
+  const [accommodationType, setAccommodationType] = useState<'hotel' | 'homestay' | 'car'>(draftParams?.accommodationType || 'hotel');
+  const [budget, setBudget] = useState<string>(draftParams?.budget || '');
+  const [pace, setPace] = useState(draftParams?.pace || 'medium');
+  const [flexible, setFlexible] = useState(draftParams?.flexible ?? true);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +116,23 @@ export const PlanPage: React.FC = () => {
     abortControllerRef.current = controller;
 
     try {
+      // Save form state to draft params so user can restore it if they go back
+      setDraftParams({
+        destination,
+        arrivalDate,
+        arrivalTimeStr,
+        departureDate,
+        departureTimeStr,
+        transport,
+        foodPrefs,
+        sightseeingPrefs,
+        avoidSpots,
+        accommodationType,
+        budget,
+        pace,
+        flexible
+      });
+
       const transportLabels = transport.map(t => {
         if (t === 'public-taxi') return '公共交通/打车';
         if (t === 'rental') return '租车';
@@ -129,6 +147,7 @@ export const PlanPage: React.FC = () => {
         transport: transportLabels,
         foodPrefs,
         sightseeingPrefs,
+        avoidSpots,
         accommodationType,
         budget: budget ? parseInt(budget) : undefined,
         pace,
@@ -403,6 +422,20 @@ export const PlanPage: React.FC = () => {
               className="clean-input min-h-[100px] resize-none"
               value={sightseeingPrefs}
               onChange={(e) => setSightseeingPrefs(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-extrabold text-[var(--text-base)] flex items-center gap-2 ml-1">
+              <span className="w-4 h-4 flex items-center justify-center text-red-500 font-bold">×</span>
+              避雷/避坑
+            </label>
+            <textarea 
+              disabled={loading}
+              placeholder="例如：不想去的景点、商业化严重的地方..."
+              className="clean-input min-h-[80px] resize-none"
+              value={avoidSpots}
+              onChange={(e) => setAvoidSpots(e.target.value)}
             />
           </div>
         </div>

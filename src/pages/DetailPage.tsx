@@ -23,7 +23,7 @@ import { Modal } from '../components/Modals';
 
 export const DetailPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentItinerary, setCurrentItinerary, savedItineraries, saveItinerary } = useTravel();
+  const { currentItinerary, setCurrentItinerary, savedItineraries, saveItinerary, setDraftParams } = useTravel();
   
   const [activeDayIdx, setActiveDayIdx] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -81,6 +81,7 @@ export const DetailPage: React.FC = () => {
     setShowSaveNamePrompt(false);
     if (saved) {
       setCurrentItinerary(saved);
+      setDraftParams(null);
       navigate('/collection');
     }
   };
@@ -147,18 +148,27 @@ export const DetailPage: React.FC = () => {
               </button>
             </div>
           ) : (
-            <button 
-              onClick={handleSaveClick}
-              disabled={isSaving}
-              className="px-4 py-2 bg-[var(--accent)] text-white rounded-xl transition-all text-sm font-bold flex items-center gap-2 disabled:opacity-50 hover:bg-[var(--accent)]/90"
-            >
-              {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Star className="w-4 h-4 fill-current" />
-              )}
-              {isSaving ? '保存中...' : '保存'}
-            </button>
+            <>
+              <button 
+                onClick={() => navigate('/')}
+                disabled={isSaving}
+                className="px-3 py-2 text-[var(--text-base)] hover:bg-[var(--surface)] rounded-xl transition-all text-xs font-bold"
+              >
+                修改输入
+              </button>
+              <button 
+                onClick={handleSaveClick}
+                disabled={isSaving}
+                className="px-4 py-2 bg-[var(--accent)] text-white rounded-xl transition-all text-sm font-bold flex items-center gap-2 disabled:opacity-50 hover:bg-[var(--accent)]/90"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Star className="w-4 h-4 fill-current" />
+                )}
+                {isSaving ? '保存中...' : '保存'}
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -260,7 +270,14 @@ export const DetailPage: React.FC = () => {
                           activity.type === 'transport' ? "border-blue-400" : "border-[var(--border)]"
                         )} />
                         <div className="text-[10px] font-black text-[var(--accent)] mb-0.5 bg-[var(--accent-light)] inline-block px-1.5 py-0.5 rounded-md uppercase tracking-wider">{activity.time}</div>
-                        <div className="font-black text-sm text-[var(--text-base)] mb-0.5">{activity.location}</div>
+                        <div className="flex items-start justify-between gap-2 mb-0.5">
+                          <div className="font-black text-sm text-[var(--text-base)]">{activity.location}</div>
+                          {activity.cost && (
+                            <div className="text-[10px] font-bold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 whitespace-nowrap">
+                              {activity.cost}
+                            </div>
+                          )}
+                        </div>
                         <p className="text-[12px] text-[var(--text-muted)] leading-relaxed">{activity.description}</p>
                       </div>
                     ))}

@@ -10,6 +10,7 @@ export interface GenerateParams {
   transport: string[];
   foodPrefs?: string;
   sightseeingPrefs?: string;
+  avoidSpots?: string;
   accommodationType: 'hotel' | 'homestay' | 'car';
   budget?: number;
   pace: string;
@@ -30,6 +31,7 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
   })
   Food Preferences: ${params.foodPrefs || "None specified"}
   Sightseeing Preferences: ${params.sightseeingPrefs || "None specified"}
+  Spots to Avoid (避雷): ${params.avoidSpots || "None specified"} (You MUST STRICTLY AVOID including these places in your itinerary.)
   Accommodation Type: ${params.accommodationType === 'car' ? 'Sleeping in the car (Suggest campsites/parking)' : params.accommodationType}
   Accommodation Budget: ${params.budget ? params.budget + ' RMB' : 'Not specified'}
   Flexible Generation: ${params.flexible ? "Yes (The AI can add, remove, or adjust activities based on preferences and logical routing to make the itinerary more reasonable and optimized, even if it differs slightly from the exact input list)" : "No (Strictly follow the user's input as much as possible)"}
@@ -42,6 +44,7 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
   5. Ensure all times in activities are realistic and follow the pace strategy if possible.
   6. You MUST consider the user's "Food Preferences" when planning the three meals (breakfast, lunch, dinner) each day. Instead of putting detailed restaurant recommendations inside the 'activities' array, you MUST put the recommended restaurants for the three meals into the 'restaurants' array (which represents the "美食推荐" / Food Recommendations module). For each restaurant, specify the 'mealType' (e.g., "早餐", "午餐", "晚餐"). You can still include a brief 'food' type activity in the 'activities' array (e.g., "前往餐厅享用午餐"), but the actual restaurant details MUST go into the 'restaurants' array.
   7. Provide recommendations for destination specialty milk tea and coffee shops ("cafesAndTea"), and specialty bakeries and dessert shops ("bakeriesAndDesserts") at the root level of the JSON. If there are no good recommendations, omit the arrays or leave them empty.
+  8. For 'sightseeing' activities, you MUST use the 'cost' field to provide the actual ticket price/admission fee (e.g., "门票: 120元", "免费", "游船: 50元"). Use Google Search to find accurate pricing.
 
   Please provide the response strictly in the following JSON format:
   {
@@ -88,7 +91,8 @@ export async function generateItinerary(params: GenerateParams): Promise<TravelI
             "time": "string",
             "location": "string",
             "description": "string",
-            "type": "sightseeing | transport | food | rest"
+            "type": "sightseeing | transport | food | rest",
+            "cost": "string (mandatory for sightseeing spots, provide actual ticket prices or '免费')"
           }
         ],
         "restaurants": [

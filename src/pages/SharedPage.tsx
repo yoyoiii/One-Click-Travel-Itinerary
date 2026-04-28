@@ -175,7 +175,14 @@ export const SharedPage: React.FC = () => {
                           activity.type === 'transport' ? "border-blue-400" : "border-[var(--border)]"
                         )} />
                         <div className="text-[10px] font-black text-[var(--accent)] mb-0.5 bg-[var(--accent-light)] inline-block px-1.5 py-0.5 rounded-md uppercase tracking-wider">{activity.time}</div>
-                        <div className="font-black text-sm text-[var(--text-base)] mb-0.5">{activity.location}</div>
+                        <div className="flex items-start justify-between gap-2 mb-0.5">
+                          <div className="font-black text-sm text-[var(--text-base)]">{activity.location}</div>
+                          {activity.cost && (
+                            <div className="text-[10px] font-bold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 whitespace-nowrap">
+                              {activity.cost}
+                            </div>
+                          )}
+                        </div>
                         <p className="text-[12px] text-[var(--text-muted)] leading-relaxed">{activity.description}</p>
                       </div>
                     ))}
